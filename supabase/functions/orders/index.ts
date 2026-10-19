@@ -26,17 +26,18 @@
 import { withErrorHandling, okResponse } from '../_shared/http.ts'
 import { requireCallerProfile } from '../_shared/callerAuth.ts'
 import { getSupabaseAdminClient } from '../_shared/supabaseAdmin.ts'
-import { NotFoundError, ConflictError, ValidationError } from '../../../backend/lib/errors/index.ts'
+import { NotFoundError, ConflictError, ValidationError, AuthorizationError } from '../../../backend/lib/errors/index.ts'
 import { buildPendingIdempotencyRecord, decideIdempotency, type IdempotencyRecord } from '../../../backend/lib/idempotency/index.ts'
 import {
   cancelOrderRequestSchema,
   checkoutSchema,
   guestOrderLookupSchema,
+  updateOrderStatusSchema,
   parseOrThrow,
 } from '../../../backend/lib/validation/index.ts'
 import { writeAuditLog } from '../../../backend/lib/audit/index.ts'
 import * as orders from '../../../backend/services/orders/orders.service.ts'
-import { sendOrderConfirmationEmail } from '../../../backend/lib/orders/confirmationEmail.ts'
+import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../../../backend/lib/orders/confirmationEmail.ts'
 
 const IDEMPOTENCY_SCOPE = 'order.create'
 
@@ -109,6 +110,7 @@ Deno.serve(
           await sendOrderConfirmationEmail(order, {
             apiKey: Deno.env.get('RESEND_API_KEY'),
             from: Deno.env.get('ORDER_FROM_EMAIL'),
+            notifyTo: Deno.env.get('ORDER_NOTIFY_EMAIL'),
           })
         } catch (mailError) {
           console.error('Order confirmation email was not sent.', mailError)
@@ -149,6 +151,30 @@ Deno.serve(
         entityId: orderId,
         metadata: { reason: input.reason ?? null },
       })
+      return okResponse(order)
+    }
+
+    // POST /:id/status — admin moves the order along and the customer is emailed
+    if (rest.length === 1 && rest[0] === 'status' && req.method === 'POST') {
+      if (!caller.isAdmin) throw new AuthorizationError('Only admins can change order status.')
+      const input = parseOrThrow(updateOrderStatusSchema, body)
+      const order = await orders.updateOrderStatusByAdmin(admin, caller.id, orderId, input.status, input.note)
+      await writeAuditLog(admin, {
+        actor: caller.id,
+        actorType: 'admin',
+        action: 'order.status_changed',
+        entityType: 'order',
+        entityId: orderId,
+        metadata: { to: input.status, note: input.note ?? null },
+      })
+      try {
+        await sendOrderStatusEmail(order, input.status, {
+          apiKey: Deno.env.get('RESEND_API_KEY'),
+          from: Deno.env.get('ORDER_FROM_EMAIL'),
+        }, input.note)
+      } catch (mailError) {
+        console.error('Order status email was not sent.', mailError)
+      }
       return okResponse(order)
     }
 

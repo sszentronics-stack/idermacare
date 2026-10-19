@@ -1964,3 +1964,9 @@ img {
     font-size: 22px;
   }
 }
+
+.admin-image-add-tile.is-dragover {
+  background: #efe7f7;
+  border-color: #6b3fa0;
+  color: #222;
+}

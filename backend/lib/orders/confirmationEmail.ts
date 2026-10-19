@@ -87,32 +87,139 @@ export function buildOrderConfirmationMessage(order: ConfirmationOrder) {
 export interface MailEnv {
   apiKey?: string | null
   from?: string | null
+  /** Store inbox that receives a "new order" alert. Optional. */
+  notifyTo?: string | null
 }
 
-/** Sends the confirmation when a mail key is configured. A missing key does not fail the order. */
+const BRAND = 'SS Zen Traders'
+const DEFAULT_FROM = `${BRAND} <sales@idermacare.com>`
+
+function esc(value: unknown) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function shipToLine(order: ConfirmationOrder) {
+  const a = order.shippingAddress
+  return [a?.recipientName, a?.addressLine1, a?.addressLine2, a?.city, a?.province].filter(Boolean).join(', ')
+}
+
+/** HTML version of the confirmation (inline styles only, for email clients). */
+export function buildOrderConfirmationHtml(order: ConfirmationOrder, heading = 'Thank you for your order') {
+  const currency = order.currency || 'PKR'
+  const status = STATUS_LABEL[order.orderStatus || ''] || order.orderStatus || 'Pending confirmation'
+  const payment = PAYMENT_LABEL[order.paymentMethod || ''] || order.paymentMethod || 'Cash on Delivery'
+  const rows = order.items
+    .map((item) => {
+      const name = `${item.productName}${item.variantName ? ` — ${item.variantName}` : ''}`
+      return `<tr><td style="padding:8px 0;border-bottom:1px solid #eee">${esc(name)} × ${item.quantity}</td><td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${esc(money(item.lineTotal, currency))}</td></tr>`
+    })
+    .join('')
+  return `<!doctype html><html><body style="margin:0;background:#f6f4f8;font-family:Arial,Helvetica,sans-serif;color:#222">
+<div style="max-width:560px;margin:0 auto;padding:24px">
+<div style="background:#fff;border-radius:12px;padding:28px">
+<h1 style="margin:0 0 4px;font-size:22px">${esc(heading)}</h1>
+<p style="margin:0 0 20px;color:#555">Order <strong>${esc(order.orderNumber)}</strong> — ${esc(status)}</p>
+<table width="100%" cellspacing="0" cellpadding="0" style="font-size:14px">${rows}
+<tr><td style="padding-top:12px;color:#555">Subtotal</td><td style="padding-top:12px;text-align:right">${esc(money(order.subtotal, currency))}</td></tr>
+<tr><td style="color:#555">Delivery</td><td style="text-align:right">${esc(money(order.shippingTotal, currency))}</td></tr>
+<tr><td style="padding-top:8px;font-weight:bold">Total</td><td style="padding-top:8px;text-align:right;font-weight:bold">${esc(money(order.grandTotal, currency))}</td></tr></table>
+<p style="font-size:14px;margin:20px 0 4px"><strong>Payment:</strong> ${esc(payment)}</p>
+<p style="font-size:14px;margin:0"><strong>Shipping to:</strong> ${esc(shipToLine(order) || 'Address confirmed at checkout')}</p>
+</div>
+<p style="font-size:12px;color:#777;text-align:center;margin-top:16px">${BRAND}<br>Office#14, First Floor, Farooq 2D Plaza, G-13/3, Islamabad<br>03079594474 · sales@idermacare.com</p>
+</div></body></html>`
+}
+
+const STATUS_MESSAGE: Record<string, { subject: string; heading: string; line: string }> = {
+  confirmed: { subject: 'confirmed', heading: 'Your order is confirmed', line: 'We have confirmed your order and are getting it ready.' },
+  processing: { subject: 'is being prepared', heading: 'We are preparing your order', line: 'Your order is being prepared.' },
+  packed: { subject: 'is packed', heading: 'Your order is packed', line: 'Your order is packed and waiting for the courier.' },
+  shipped: { subject: 'has shipped', heading: 'Your order is on its way', line: 'Your order has been handed to the courier.' },
+  delivered: { subject: 'was delivered', heading: 'Your order was delivered', line: 'Your order has been delivered. We hope you enjoy it.' },
+  cancelled: { subject: 'was cancelled', heading: 'Your order was cancelled', line: 'Your order has been cancelled. Contact us if this is unexpected.' },
+}
+
+/** Returns null for statuses that should not email the customer. */
+export function buildOrderStatusMessage(order: ConfirmationOrder, status: string, note?: string | null) {
+  const copy = STATUS_MESSAGE[status]
+  if (!copy) return null
+  const extra = note ? `
+
+${note}` : ''
+  const text = `${copy.heading}
+
+Order ${order.orderNumber}
+${copy.line}${extra}
+
+${BRAND}
+03079594474
+sales@idermacare.com`
+  const html = buildOrderConfirmationHtml({ ...order, orderStatus: status }, copy.heading).replace(
+    '</strong> —',
+    `</strong> — ${esc(copy.line)}${note ? ` ${esc(note)}` : ''} —`,
+  )
+  return { subject: `Your ${BRAND} order ${order.orderNumber} ${copy.subject}`, text, html }
+}
+
+async function sendMail(
+  env: MailEnv,
+  message: { to: string; subject: string; text: string; html?: string },
+  fetchImpl: typeof fetch,
+): Promise<{ sent: boolean; reason?: string }> {
+  if (!message.to) return { sent: false, reason: 'no-email' }
+  if (!env.apiKey) return { sent: false, reason: 'not-configured' }
+  const response = await fetchImpl('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: env.from || DEFAULT_FROM,
+      to: [message.to],
+      subject: message.subject,
+      text: message.text,
+      ...(message.html ? { html: message.html } : {}),
+    }),
+  })
+  if (!response.ok) return { sent: false, reason: `mail-${response.status}` }
+  return { sent: true }
+}
+
+/** Sends the confirmation when a mail key is configured, plus a new-order alert to the store. */
 export async function sendOrderConfirmationEmail(
   order: ConfirmationOrder,
   env: MailEnv,
   fetchImpl: typeof fetch = fetch,
 ): Promise<{ sent: boolean; reason?: string }> {
   const to = String(order.email || '').trim()
-  if (!to) return { sent: false, reason: 'no-email' }
-  if (!env.apiKey) return { sent: false, reason: 'not-configured' }
-
   const message = buildOrderConfirmationMessage(order)
-  const response = await fetchImpl('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: env.from || 'SS Zen Traders <sales@idermacare.com>',
-      to: [to],
-      subject: message.subject,
-      text: message.text,
-    }),
-  })
-  if (!response.ok) return { sent: false, reason: `mail-${response.status}` }
-  return { sent: true }
+  const result = await sendMail(
+    env,
+    { to, subject: message.subject, text: message.text, html: buildOrderConfirmationHtml(order) },
+    fetchImpl,
+  )
+  const notifyTo = String(env.notifyTo || '').trim()
+  if (notifyTo) {
+    await sendMail(
+      env,
+      { to: notifyTo, subject: `New order ${order.orderNumber} — ${money(order.grandTotal, order.currency)}`, text: message.text, html: buildOrderConfirmationHtml(order, 'New order received') },
+      fetchImpl,
+    ).catch(() => undefined)
+  }
+  return result
+}
+
+/** Emails the customer when an admin moves the order to a new status. */
+export async function sendOrderStatusEmail(
+  order: ConfirmationOrder,
+  status: string,
+  env: MailEnv,
+  note?: string | null,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ sent: boolean; reason?: string }> {
+  const message = buildOrderStatusMessage(order, status, note)
+  if (!message) return { sent: false, reason: 'no-template' }
+  return sendMail(env, { to: String(order.email || '').trim(), ...message }, fetchImpl)
 }

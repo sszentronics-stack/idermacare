@@ -510,3 +510,40 @@ export async function requestOrderCancellation(
   if (!updated) throw new NotFoundError('Order')
   return updated
 }
+
+
+/**
+ * Admin-driven status change (confirm, pack, ship, deliver...). Uses the
+ * same transition table as customer cancellation, so an order can never
+ * silently jump states, and writes order_status_history.
+ */
+export async function updateOrderStatusByAdmin(
+  db: SupabaseClient,
+  adminProfileId: string,
+  orderId: string,
+  toStatus: OrderStatus,
+  note?: string,
+): Promise<OrderSummary> {
+  const order = await getOrderForCaller(db, adminProfileId, true, orderId)
+  assertOrderStatusTransition(order.orderStatus as OrderStatus, toStatus)
+
+  const { error } = await db.from('orders').update({ order_status: toStatus }).eq('id', orderId)
+  if (error) throw error
+  await db.from('order_status_history').insert({
+    order_id: orderId,
+    from_status: order.orderStatus,
+    to_status: toStatus,
+    note: note ?? null,
+  })
+  if (toStatus === 'cancelled') {
+    await recordCancellationTransaction(db, {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      currency: order.currency,
+      grandTotal: order.grandTotal,
+    })
+  }
+  const updated = await fetchOrderWithItems(db, orderId)
+  if (!updated) throw new NotFoundError('Order')
+  return updated
+}

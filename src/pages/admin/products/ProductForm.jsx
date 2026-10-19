@@ -1,6 +1,7 @@
+import ImageDropzone from '../../../components/admin/ImageDropzone'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ImagePlus, Star, X } from 'lucide-react'
+import { Star, X } from 'lucide-react'
 import { AdminBreadcrumb, AdminCard } from '../../../components/admin/ui'
 import { useAdminToast } from '../../../context/admin/AdminToastContext'
 import { isSupabaseConfigured } from '../../../lib/supabase/client'
@@ -51,7 +52,7 @@ export default function ProductForm() {
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
   function addImages(fileList) {
-    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'))
+    const files = Array.from(fileList || [])
     if (!files.length) return
 
     setImages((prev) => {
@@ -249,21 +250,7 @@ export default function ProductForm() {
               </div>
             ))}
 
-            <label className="admin-image-add-tile">
-              <ImagePlus size={22} />
-              <span>Add pictures</span>
-              <span className="admin-image-add-hint">JPG, PNG, WebP · multiple OK</span>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={(e) => {
-                  addImages(e.target.files)
-                  e.target.value = ''
-                }}
-              />
-            </label>
+            <ImageDropzone onFiles={addImages} onReject={(r) => toast.error(r.join('; '))} />
           </div>
 
           <h3 className="admin-form-subheading">Starter variant</h3>

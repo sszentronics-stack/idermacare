@@ -102,3 +102,8 @@ export function cancelOrder(orderId: string, reason?: string): Promise<OrderSumm
 export function lookupGuestOrder(orderNumber: string, email: string): Promise<OrderSummary> {
   return callEdgeFunction<OrderSummary>('orders/lookup', { method: 'POST', body: { orderNumber, email } })
 }
+
+/** Admin only: move an order to its next status; the customer is emailed. */
+export function updateOrderStatus(orderId: string, status: string, note?: string) {
+  return callEdgeFunction<OrderSummary>(`orders/${orderId}/status`, { method: 'POST', body: { status, note } })
+}

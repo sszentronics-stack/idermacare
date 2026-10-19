@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildOrderConfirmationMessage, sendOrderConfirmationEmail } from './confirmationEmail.ts'
+import {
+  buildOrderConfirmationHtml,
+  buildOrderConfirmationMessage,
+  buildOrderStatusMessage,
+  sendOrderConfirmationEmail,
+  sendOrderStatusEmail,
+} from './confirmationEmail.ts'
 
 const order = {
   orderNumber: 'SSZ-1001',
@@ -47,5 +53,31 @@ describe('order confirmation email', () => {
     expect(result.sent).toBe(true)
     expect(body).toContain('customer@example.com')
     expect(body).toContain('Hero Mighty Patch Invisible+')
+  })
+
+  it('sends an HTML confirmation to the customer and an alert to the store', async () => {
+    const calls: { to: string[]; html?: string; subject: string }[] = []
+    const fake = (async (_url: string, init: { body: string }) => {
+      calls.push(JSON.parse(init.body))
+      return { ok: true }
+    }) as unknown as typeof fetch
+    const result = await sendOrderConfirmationEmail(order, { apiKey: 'k', notifyTo: 'store@example.com' }, fake)
+    expect(result).toEqual({ sent: true })
+    expect(calls.map((c) => c.to[0])).toEqual(['customer@example.com', 'store@example.com'])
+    expect(calls[0]!.html).toContain('Thank you for your order')
+    expect(calls[1]!.subject).toContain('New order SSZ-1001')
+  })
+
+  it('escapes customer-supplied text in the HTML', () => {
+    const html = buildOrderConfirmationHtml({ ...order, shippingAddress: { recipientName: '<script>x</script>' } })
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
+  })
+
+  it('emails status updates only for customer-facing statuses', async () => {
+    expect(buildOrderStatusMessage(order, 'shipped')?.subject).toBe('Your SS Zen Traders order SSZ-1001 has shipped')
+    expect(buildOrderStatusMessage(order, 'packed')?.subject).toContain('is packed')
+    expect(buildOrderStatusMessage(order, 'ready_for_pickup')).toBeNull()
+    expect(await sendOrderStatusEmail(order, 'ready_for_pickup', { apiKey: 'k' })).toEqual({ sent: false, reason: 'no-template' })
   })
 })

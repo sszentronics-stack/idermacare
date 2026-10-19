@@ -1,3 +1,4 @@
+import ImageDropzone from '../../../components/admin/ImageDropzone'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AdminBreadcrumb, AdminCard, ErrorState, LoadingState, StatusPill, useConfirm } from '../../../components/admin/ui'
@@ -114,8 +115,7 @@ export default function ProductDetail() {
     }
   }
 
-  async function handleUpload(e) {
-    const files = Array.from(e.target.files || [])
+  async function handleUpload(files) {
     if (!files.length) return
     setUploading(true)
     try {
@@ -140,7 +140,6 @@ export default function ProductDetail() {
       toast.error(err?.message ?? 'Failed to upload image.')
     } finally {
       setUploading(false)
-      e.target.value = ''
     }
   }
 
@@ -240,17 +239,7 @@ export default function ProductDetail() {
             </div>
           ))}
         </div>
-        <label className="admin-btn admin-btn-ghost admin-upload-btn">
-          {uploading ? 'Uploading…' : 'Upload images'}
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleUpload}
-            disabled={uploading}
-            hidden
-          />
-        </label>
+        <ImageDropzone onFiles={handleUpload} onReject={(r) => toast.error(r.join('; '))} disabled={uploading} />
       </AdminCard>
     </div>
   )

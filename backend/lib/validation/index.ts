@@ -359,6 +359,12 @@ export const cancelOrderRequestSchema = z.object({
 })
 export type CancelOrderRequestInput = z.infer<typeof cancelOrderRequestSchema>
 
+export const updateOrderStatusSchema = z.object({
+  status: z.enum(['confirmed', 'processing', 'packed', 'ready_for_pickup', 'shipped', 'delivered', 'cancelled', 'returned']),
+  note: z.string().trim().max(500).optional(),
+})
+export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>
+
 // ---------------------------------------------------------------------------
 // Phase 9 — ERP-Controlled Inventory & Availability Synchronization
 // ---------------------------------------------------------------------------

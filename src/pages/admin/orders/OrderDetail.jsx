@@ -2,11 +2,19 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AdminBreadcrumb, AdminCard, ErrorState, LoadingState, StatusPill, useConfirm } from '../../../components/admin/ui'
 import { useAdminToast } from '../../../context/admin/AdminToastContext'
-import { getOrder, cancelOrder } from '../../../repositories/orders.repository'
+import { getOrder, cancelOrder, updateOrderStatus } from '../../../repositories/orders.repository'
 import { getOrderTrackingTimeline } from '../../../repositories/admin/shipments.admin.repository'
 import { formatMoney } from '../../../../backend/lib/money/index'
 
 const CANCELLABLE = ['pending', 'confirmed']
+const NEXT_STEP = {
+  pending: { status: 'confirmed', label: 'Confirm order' },
+  confirmed: { status: 'processing', label: 'Start processing' },
+  processing: { status: 'packed', label: 'Mark packed' },
+  packed: { status: 'ready_for_pickup', label: 'Ready for pickup' },
+  ready_for_pickup: { status: 'shipped', label: 'Mark shipped' },
+  shipped: { status: 'delivered', label: 'Mark delivered' },
+}
 
 export default function OrderDetail() {
   const { id } = useParams()
@@ -47,6 +55,20 @@ export default function OrderDetail() {
     }
   }
 
+  const next = NEXT_STEP[o.orderStatus]
+
+  async function handleAdvance() {
+    const ok = await confirm({ title: `${next.label}?`, body: 'The customer is emailed about this update.', confirmLabel: next.label })
+    if (!ok) return
+    try {
+      await updateOrderStatus(id, next.status)
+      toast.success('Order updated and customer emailed.')
+      reload()
+    } catch (err) {
+      toast.error(err?.message ?? 'Failed to update the order.')
+    }
+  }
+
   const addr = o.shippingAddress ?? {}
 
   return (
@@ -57,6 +79,9 @@ export default function OrderDetail() {
         <h1>Order {o.orderNumber}</h1>
         <div className="admin-header-actions">
           <StatusPill status={o.orderStatus} />
+          {next && (
+            <button type="button" className="admin-btn admin-btn-primary" onClick={handleAdvance}>{next.label}</button>
+          )}
           {CANCELLABLE.includes(o.orderStatus) && (
             <button type="button" className="admin-btn admin-btn-danger" onClick={handleCancel}>Request cancellation</button>
           )}
