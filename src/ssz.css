@@ -218,10 +218,10 @@ details[open] > .ssz-menu__panel { animation: ssz-menu-open var(--ssz-t-default)
 .ssz-card { display: flex; flex-direction: column; flex: 1; min-width: 0; text-decoration: none; color: inherit; }
 .ssz-card__media { position: relative; aspect-ratio: 1; overflow: hidden; background: var(--ssz-mist); }
 .ssz-section--brands .ssz-card { align-items: center; text-align: center; }
-.ssz-brand__media { width: min(220px, 100%); margin-inline: auto; background: transparent; }
+.ssz-brand__media { width: min(220px, 100%); margin-inline: auto; background: transparent; overflow: visible; }
 .ssz-section--brands .ssz-card__info { align-items: center; }
 .ssz-card__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity var(--ssz-t-long) ease, transform var(--ssz-t-long) ease; }
-.ssz-card__img.ssz-brand__logo { border-radius: 50%; object-fit: contain; background: var(--ssz-paper); }
+.ssz-card__img.ssz-brand__logo { border-radius: 50%; object-fit: contain; background: var(--ssz-paper); box-shadow: 0 10px 24px rgba(0, 0, 0, .22), 0 2px 6px rgba(0, 0, 0, .12); }
 .ssz-card__img--hover { opacity: 0; }
 .ssz-card__badge { position: absolute; z-index: 1; left: 10px; bottom: 10px; }
 .ssz-card__wish { position: absolute; z-index: 1; top: 8px; right: 8px; width: 36px; height: 36px; display: grid; place-items: center; color: var(--ssz-ink); background: var(--ssz-paper); border: 1px solid var(--ssz-line); border-radius: 50%; cursor: pointer; }
