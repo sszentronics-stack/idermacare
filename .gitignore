@@ -39,3 +39,7 @@ coverage
 SECRETS-AND-HOW-TO-RUN.txt
 secrets.txt
 
+
+# Playwright
+test-results/
+playwright-report/

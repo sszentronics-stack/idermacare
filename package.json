@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/build-sitemap.mjs",
-    "prebuild": "node scripts/build-sitemap.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/prerender.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
+    "e2e": "playwright test",
     "db:tables": "node scripts/build-all-tables.mjs",
     "db:tables:seed": "node scripts/build-all-tables.mjs --with-seed",
     "db:dummy": "node -e \"console.log('Open supabase/dummy-data.sql and paste into Supabase SQL Editor:\\nhttps://supabase.com/dashboard/project/tiwoqgagrclmbysgexbf/sql/new')\"",
@@ -26,6 +27,7 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

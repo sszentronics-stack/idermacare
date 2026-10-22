@@ -66,7 +66,7 @@ export function useSeo({ title, description, image, noindex } = {}) {
       setMetaTag('name', 'description', description),
       setMetaTag('property', 'og:title', title),
       setMetaTag('property', 'og:description', description),
-      setMetaTag('property', 'og:image', image),
+      setMetaTag('property', 'og:image', image ? new URL(image, window.location.origin).href : image),
       setMetaTag('name', 'twitter:card', image ? 'summary_large_image' : 'summary'),
       setMetaTag('name', 'robots', noindex ? 'noindex, nofollow' : undefined),
       setCanonical(typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : undefined),
@@ -84,6 +84,14 @@ export function useSeo({ title, description, image, noindex } = {}) {
 export function useJsonLd(data) {
   useEffect(() => {
     if (!data) return undefined
+    // The build already wrote a copy of this block into the page for crawlers; replace it so the type is not listed twice.
+    document.head.querySelectorAll('script[type="application/ld+json"][data-prerendered]').forEach((existing) => {
+      try {
+        if (JSON.parse(existing.textContent)['@type'] === data['@type']) existing.remove()
+      } catch {
+        /* ignore a malformed block */
+      }
+    })
     const script = document.createElement('script')
     script.type = 'application/ld+json'
     script.textContent = JSON.stringify(data)
