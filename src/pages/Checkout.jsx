@@ -356,7 +356,11 @@ export default function Checkout() {
   return (
     <div className="container-aura py-10 md:py-14">
       <h1 className="text-3xl font-medium mb-2">Checkout</h1>
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-soft mb-8" aria-label="Checkout progress">
+      <div className="ssz-stepbar md:hidden" role="status">
+        <p>Step {stepIndex + 1} of {STEPS.length}: <strong>{STEP_LABELS[step]}</strong></p>
+        <div className="ssz-stepbar__track" aria-hidden="true"><span style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }} /></div>
+      </div>
+      <ol className="hidden md:flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-soft mb-8" aria-label="Checkout progress">
         {STEPS.map((s, i) => (
           <li key={s} className={`flex items-center gap-2 ${i === stepIndex ? 'text-ink font-medium' : ''}`}>
             <span

@@ -457,7 +457,42 @@ details[open] > .ssz-menu__panel { animation: ssz-menu-open var(--ssz-t-default)
 .ssz-timeline__side { margin: 0 0 12px; padding: 10px 12px; background: #fbeaea; border-radius: 8px; color: #8a2d2d; }
 .ssz-timeline__tracking { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--ssz-line); font-size: 14px; }
 .ssz-track__form { display: grid; gap: 8px; margin: 18px 0; }
-.ssz-track__form input { padding: 12px; border: 1px solid var(--ssz-line-strong); border-radius: 8px; font: inherit; background: #fff; }
+.ssz-track__form input { padding: 12px; border: 1px solid var(--ssz-line-strong); border-radius: 8px; font-family: inherit; font-size: 16px; background: #fff; }
 .ssz-track__error { color: #8a2d2d; }
 .ssz-track__result { margin-top: 20px; display: grid; gap: 14px; }
 .ssz-track__items { margin: 0; padding-left: 18px; }
+
+/* ==========================================================================
+   Phone friendly: comfortable tap areas, room for the floating WhatsApp
+   button, a compact checkout progress bar, and no iPhone zoom on form fields.
+   ========================================================================== */
+.ssz-stepbar { margin-bottom: 24px; font-size: 14px; }
+.ssz-stepbar p { margin: 0 0 8px; }
+.ssz-stepbar__track { height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden; }
+.ssz-stepbar__track span { display: block; height: 100%; background: var(--ssz-rose-gold); border-radius: 3px; transition: width var(--ssz-t-medium) ease; }
+
+@media (max-width: 749px) {
+  /* Keep the last button or link on every page clear of the floating WhatsApp button. */
+  main { padding-bottom: 72px; }
+  .ssz-footer { padding-bottom: 88px; }
+
+  /* Form fields at 16px stop iPhones zooming in when a field is tapped. */
+  input, select, textarea { font-size: 16px; }
+
+  /* 44px is the comfortable minimum for a finger. */
+  .ssz-logo { display: inline-flex; align-items: center; min-height: 44px; }
+  .ssz-arrow-link, .ssz-blog__more, .ssz-tap { display: inline-flex; align-items: center; min-height: 44px; }
+  .ssz-card__wish, .ssz-product__arrow { width: 44px; height: 44px; }
+  .ssz-card__add, .ssz-sv__add { min-height: 44px; }
+  .ssz-sort, select.ssz-sort { min-height: 44px; }
+  .ssz-footer li a { display: flex; align-items: center; min-height: 44px; padding: 0; }
+  .ssz-footer a[href^="tel:"], .ssz-footer a[href^="mailto:"] { display: inline-block; padding: 10px 0; }
+  .ssz-narrow p a, .ssz-narrow li a { display: inline-block; padding: 10px 0; }
+  .form-input-icon-btn { width: 44px; height: 44px; }
+  a.text-xs.underline { display: inline-block; padding: 12px 0; }
+  .ssz-banner__dots button, .ssz-banner__dot { position: relative; }
+  .ssz-banner__dot::after { content: ""; position: absolute; inset: -18px -4px; }
+  /* Filters drawer: roomy rows and a real checkbox size. */
+  .ssz-filter-drawer button, [role="dialog"] button { min-height: 44px; }
+  input[type="checkbox"] { width: 22px; height: 22px; }
+}

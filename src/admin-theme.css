@@ -233,3 +233,37 @@
   .print-sheet__totals .grand { padding-top: 6px; border-top: 2px solid #000; font-size: 16px; font-weight: 700; }
   .print-sheet__thanks { margin-top: 28px; text-align: center; color: #555; }
 }
+
+/* The brand mark must stay white (an older rule turned its letter green on green). */
+.admin-brand .admin-brand-mark { color: #fff; }
+
+@media (max-width: 900px) {
+  /* Without this, spare screen height is shared out and the menu bar grows tall on short pages. */
+  .admin-shell { grid-template-rows: auto 1fr; }
+
+  /* Action buttons share the row instead of squeezing into three-line labels. */
+  .admin-header-actions { flex-wrap: wrap; width: 100%; }
+  .admin-header-actions .admin-btn { flex: 1 1 calc(50% - 10px); min-width: 140px; }
+  .admin-header-actions .admin-pill { flex: 0 0 auto; }
+
+  /* Orders list: show the four things you need and let the rest wait for the detail page. */
+  .admin-table--orders th:nth-child(n + 5),
+  .admin-table--orders td:nth-child(n + 5) { display: none; }
+  .admin-table--orders th, .admin-table--orders td { padding-left: 8px; padding-right: 8px; font-size: 14px; }
+  .admin-table--orders th:nth-child(2),
+  .admin-table--orders td:nth-child(2) { display: none; }
+  .admin-table--orders td:first-child { overflow-wrap: anywhere; }
+  .admin-cell-sub { display: block; margin-top: 2px; font-size: 12.5px; color: var(--adm-muted); overflow-wrap: anywhere; }
+
+  /* Fingertip-sized buttons and fields in the admin. */
+  .admin-btn { min-height: 44px; }
+  .admin-main .form-input, .admin-main .form-select { min-height: 44px; font-size: 16px; }
+  .cms-tab { min-height: 44px; }
+}
+
+.admin-cell-sub { display: none; }
+@media (max-width: 900px) { .admin-cell-sub { display: block; } }
+
+@media (max-width: 900px) {
+  .admin-toolbar .form-input, .admin-toolbar .form-select, .admin-toolbar input, .admin-toolbar select { width: 100%; max-width: none; }
+}

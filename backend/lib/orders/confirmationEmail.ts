@@ -94,6 +94,16 @@ export interface MailEnv {
 const BRAND = 'iDermaCare'
 const DEFAULT_FROM = `${BRAND} <sales@idermacare.com>`
 
+/**
+ * The sender name customers see is always the brand. A configured sender (ORDER_FROM_EMAIL) can only
+ * choose the address, so an old or misspelled display name in the settings can never reach customers.
+ */
+export function formatFrom(configured?: string | null): string {
+  const address = /<\s*([^<>\s]+@[^<>\s]+)\s*>|([^\s<>"]+@[^\s<>"]+)/.exec(String(configured ?? ''))
+  const email = (address?.[1] ?? address?.[2] ?? '').trim()
+  return email ? `${BRAND} <${email}>` : DEFAULT_FROM
+}
+
 function esc(value: unknown) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -176,7 +186,7 @@ async function sendMail(
     method: 'POST',
     headers: { Authorization: `Bearer ${env.apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: env.from || DEFAULT_FROM,
+      from: formatFrom(env.from),
       to: [message.to],
       subject: message.subject,
       text: message.text,

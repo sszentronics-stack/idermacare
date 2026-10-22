@@ -3,6 +3,7 @@ import {
   buildOrderConfirmationHtml,
   buildOrderConfirmationMessage,
   buildOrderStatusMessage,
+  formatFrom,
   sendOrderConfirmationEmail,
   sendOrderStatusEmail,
 } from './confirmationEmail.ts'
@@ -27,6 +28,30 @@ const order = {
   },
   items: [{ productName: 'Hero Mighty Patch Invisible+', variantName: null, quantity: 1, lineTotal: 440000 }],
 }
+
+describe('sender name', () => {
+  it('always shows iDermaCare, keeping only the address from the setting', () => {
+    expect(formatFrom('SS Zen Traders <orders@idermacare.com>')).toBe('iDermaCare <orders@idermacare.com>')
+    expect(formatFrom('SSzentraders <sales@idermacare.com>')).toBe('iDermaCare <sales@idermacare.com>')
+    expect(formatFrom('sales@idermacare.com')).toBe('iDermaCare <sales@idermacare.com>')
+    expect(formatFrom('  "Old Name" <  hello@idermacare.com >  ')).toBe('iDermaCare <hello@idermacare.com>')
+  })
+
+  it('falls back to the default sender when nothing usable is set', () => {
+    expect(formatFrom(undefined)).toBe('iDermaCare <sales@idermacare.com>')
+    expect(formatFrom('')).toBe('iDermaCare <sales@idermacare.com>')
+    expect(formatFrom('just a name')).toBe('iDermaCare <sales@idermacare.com>')
+  })
+
+  it('is used as the from address of a sent email', async () => {
+    let from = ''
+    await sendOrderConfirmationEmail(order, { apiKey: 'k', from: 'SS Zen Traders <sales@idermacare.com>' }, (async (_url: string, init: { body: string }) => {
+      from = JSON.parse(init.body).from
+      return { ok: true, status: 200 }
+    }) as unknown as typeof fetch)
+    expect(from).toBe('iDermaCare <sales@idermacare.com>')
+  })
+})
 
 describe('order confirmation email', () => {
   it('includes the same order content shown on the confirmation page', () => {

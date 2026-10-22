@@ -76,7 +76,7 @@ export default function Shop() {
       <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-[#eee]">
         <button
           type="button"
-          className="flex items-center gap-2 text-sm font-medium lg:hidden"
+          className="flex items-center gap-2 text-sm font-medium lg:hidden ssz-tap"
           onClick={() => setFiltersOpen(true)}
         >
           <SlidersHorizontal size={16} />

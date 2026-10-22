@@ -42,14 +42,14 @@ export default function OrderList() {
         {state.status === 'ok' && state.items.length === 0 && <EmptyState>No orders found.</EmptyState>}
         {state.status === 'ok' && state.items.length > 0 && (
           <div className="admin-table-wrap">
-            <table className="admin-table">
+            <table className="admin-table admin-table--orders">
               <thead>
-                <tr><th>Order</th><th>Customer</th><th>Total</th><th>Order</th><th>Payment</th><th>Fulfillment</th><th>Placed</th></tr>
+                <tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Payment</th><th>Fulfillment</th><th>Placed</th></tr>
               </thead>
               <tbody>
                 {state.items.map((o) => (
                   <tr key={o.id}>
-                    <td><Link to={`/admin/orders/${o.id}`} className="admin-link">{o.orderNumber}</Link></td>
+                    <td><Link to={`/admin/orders/${o.id}`} className="admin-link">{o.orderNumber}</Link><span className="admin-cell-sub">{o.email ?? o.phone ?? '—'}</span></td>
                     <td>{o.email ?? o.phone ?? '—'}</td>
                     <td>{formatMoney(o.grandTotal, { currency: o.currency })}</td>
                     <td><StatusPill status={o.orderStatus} /></td>
