@@ -27,6 +27,7 @@ export default function Home() {
   const { slides, story, stories, brands, home, business } = useSiteContent()
   const [slide, setSlide] = useState(0)
   const [storyIndex, setStoryIndex] = useState(0)
+  const [storyMuted, setStoryMuted] = useState(false)
   const storyRef = useRef(null)
   useSeo({
     title: business.name,
@@ -119,7 +120,7 @@ export default function Home() {
                 className="ssz-story-view__photo"
                 src={activeStory.storyVideo}
                 poster={activeStory.image}
-                muted
+                muted={storyMuted}
                 playsInline
                 autoPlay
                 width="720"
@@ -135,6 +136,14 @@ export default function Home() {
             </div>
             <div className="ssz-story-view__top">
               <p className="ssz-story-view__name">{activeStory.label}</p>
+              {activeStory.mediaType === 'video' && activeStory.storyVideo && (
+                <button type="button" className="ssz-story-view__close ssz-story-view__sound" aria-label={storyMuted ? 'Turn sound on' : 'Turn sound off'} aria-pressed={!storyMuted} onClick={() => setStoryMuted((value) => !value)}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 9v6h4l5 4V5L8 9H4z" />
+                    {storyMuted ? <path d="M17 9l5 6M22 9l-5 6" /> : <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />}
+                  </svg>
+                </button>
+              )}
               <button type="button" className="ssz-story-view__close" aria-label="Close story" onClick={() => storyRef.current?.close()}>
                 <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
                   <path d="M2 2l10 10M12 2L2 12" />
