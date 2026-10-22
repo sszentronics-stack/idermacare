@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Phase 16 — static sitemap. Lists every static storefront route. Product
-  detail pages (/products/:slug) are intentionally NOT enumerated here:
-  they're backend-driven (Phase 3) and this repo has no live Supabase
-  project in this dev environment to read the published catalog from at
-  build time, so a dynamic per-product sitemap can't be generated
-  correctly here. Before going live, either (a) wire a small build-time
-  script that queries `products` (status='published') and appends
-  <url> entries, or (b) serve a dynamic /sitemap.xml from a Supabase Edge
-  Function. Search engines will still discover product pages via on-site
-  links (Shop grid, category pages) regardless.
-
-  Replace the https://www.aurabeautycare.pk placeholder host below with
-  the real production domain before deploying.
--->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.aurabeautycare.pk/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/shop</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/about</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/contact</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/shipping</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/refund</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://www.aurabeautycare.pk/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://idermacare.com/</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/shop</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/gallery</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/blog</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/about</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/contact</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/track-order</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/shipping</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/refund</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/privacy</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/terms</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/blog/build-a-simple-skincare-routine</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/blog/what-is-collagen-skincare</loc><lastmod>2026-10-22</lastmod></url>
+  <url><loc>https://idermacare.com/blog/pimple-patch-guide</loc><lastmod>2026-10-22</lastmod></url>
 </urlset>

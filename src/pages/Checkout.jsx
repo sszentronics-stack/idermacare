@@ -15,7 +15,6 @@ import { findInfluencerCode, quoteInfluencerCode, recordInfluencerRedemption, se
 import { useSeo } from '../hooks/useSeo'
 import { useSiteContent } from '../lib/siteContent'
 import { trackEvent } from '../lib/analytics'
-import { trackEvent } from '../lib/analytics'
 
 const STEPS = ['contact', 'address', 'delivery', 'payment', 'review']
 const STEP_LABELS = { contact: 'Contact', address: 'Address', delivery: 'Delivery', payment: 'Payment', review: 'Review' }
@@ -340,7 +339,6 @@ export default function Checkout() {
       }
       // Navigate first: emptying the cart re-renders this page, and the empty-cart guard
       // above would otherwise redirect to /cart before the confirmation page opens.
-      trackEvent('Purchase', { value: (order.grandTotal || 0) / 100, currency: order.currency || 'PKR', id: order.orderNumber })
       trackEvent('Purchase', { value: (order.grandTotal || 0) / 100, currency: order.currency || 'PKR', id: order.orderNumber })
       navigate(`/order-confirmation/${order.id}`, { replace: true })
       await clearCart().catch(() => undefined) // server cart is already converted server-side; this just clears local state if needed
