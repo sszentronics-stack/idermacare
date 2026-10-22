@@ -3,7 +3,7 @@ import { useSeo } from '../hooks/useSeo'
 
 export default function Gallery() {
   useSeo({
-    title: 'Banner gallery | SS Zen Traders',
+    title: 'Banner gallery | iDermaCare',
     description: 'Campaign banners for SADOER Collagen Mask, Hero Mighty Patch, and SOME BY MI toner.',
   })
 

@@ -13,6 +13,9 @@ import { callEdgeFunction } from '../lib/supabase/functions'
 import { addressIsComplete, knownCustomer, rememberLocalCheckout } from '../lib/customerDetails'
 import { findInfluencerCode, quoteInfluencerCode, recordInfluencerRedemption, setAppliedInfluencerPromo } from '../lib/influencerCodes'
 import { useSeo } from '../hooks/useSeo'
+import { useSiteContent } from '../lib/siteContent'
+import { trackEvent } from '../lib/analytics'
+import { trackEvent } from '../lib/analytics'
 
 const STEPS = ['contact', 'address', 'delivery', 'payment', 'review']
 const STEP_LABELS = { contact: 'Contact', address: 'Address', delivery: 'Delivery', payment: 'Payment', review: 'Review' }
@@ -29,8 +32,9 @@ const EMPTY_ADDRESS = {
 }
 
 export default function Checkout() {
-  useSeo({ title: 'Checkout | SSzentronics', noindex: true })
+  useSeo({ title: 'Checkout | iDermaCare', noindex: true })
   const navigate = useNavigate()
+  const { business } = useSiteContent()
   const { isAuthenticated, user, profile, customer, initializing, identityReady, ensureGuestSession, refreshProfile } = useAuth()
   const { items, total, loading: cartLoading, clearCart, syncToServer } = useCart()
 
@@ -334,8 +338,12 @@ export default function Checkout() {
           console.error('Could not save details for next time.', err)
         }
       }
-      await clearCart().catch(() => undefined) // server cart is already converted server-side; this just clears local state if needed
+      // Navigate first: emptying the cart re-renders this page, and the empty-cart guard
+      // above would otherwise redirect to /cart before the confirmation page opens.
+      trackEvent('Purchase', { value: (order.grandTotal || 0) / 100, currency: order.currency || 'PKR', id: order.orderNumber })
+      trackEvent('Purchase', { value: (order.grandTotal || 0) / 100, currency: order.currency || 'PKR', id: order.orderNumber })
       navigate(`/order-confirmation/${order.id}`, { replace: true })
+      await clearCart().catch(() => undefined) // server cart is already converted server-side; this just clears local state if needed
     } catch (err) {
       setSubmitError(err?.message ?? 'Could not place your order. Please try again.')
     } finally {
@@ -478,7 +486,9 @@ export default function Checkout() {
               <h2 className="text-xl font-medium mb-4">Payment method</h2>
               <div className="space-y-3 mb-6">
                 <PaymentOption value="cod" selected={paymentMethod} onSelect={setPaymentMethod} label="Cash on Delivery" description="Pay in cash when your order arrives." />
-                <PaymentOption value="easypaisa" selected={paymentMethod} onSelect={setPaymentMethod} label="Easypaisa" description="Online payment via Easypaisa (coming soon — your order will be recorded as pending payment)." />
+                {business?.paymentInstructions ? (
+                  <PaymentOption value="bank_transfer" selected={paymentMethod} onSelect={setPaymentMethod} label="Bank or mobile wallet transfer" description="Pay by bank, JazzCash or Easypaisa transfer. We show the account details after you place the order." />
+                ) : null}
               </div>
               <div className="form-field">
                 <label className="form-label" htmlFor="notes">Order notes (optional)</label>
@@ -503,7 +513,7 @@ export default function Checkout() {
                   onEdit={() => goTo('address')}
                 />
                 <ReviewRow label="Delivery" value={deliveryMethod === 'express' ? 'Express delivery' : 'Standard delivery'} onEdit={() => goTo('delivery')} />
-                <ReviewRow label="Payment" value={paymentMethod === 'easypaisa' ? 'Easypaisa' : 'Cash on Delivery'} onEdit={() => goTo('payment')} />
+                <ReviewRow label="Payment" value={paymentMethod === 'bank_transfer' ? 'Bank or mobile wallet transfer' : paymentMethod === 'easypaisa' ? 'Easypaisa' : 'Cash on Delivery'} onEdit={() => goTo('payment')} />
               </div>
               <p className="text-xs text-ink-soft mb-4">No surprise charges — this is exactly what you'll be charged.</p>
               <button type="button" className="btn-lavender w-auto px-8" onClick={handlePlaceOrder} disabled={submitting}>

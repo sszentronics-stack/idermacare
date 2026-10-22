@@ -48,6 +48,8 @@ export interface OrderSummary {
   }
   deliveryMethod: string | null
   placedAt: string
+  history?: { status: string; at: string; note: string | null }[]
+  tracking?: { courier: string; trackingNumber: string | null; status: string } | null
   items: OrderItemSummary[]
 }
 

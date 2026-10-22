@@ -20,8 +20,8 @@ export default function Shop() {
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   useSeo({
-    title: 'Shop | SS Zen Traders',
-    description: 'Shop SADOER, Hero Cosmetics, and SOME BY MI at SS Zen Traders.',
+    title: 'Shop | iDermaCare',
+    description: 'Shop SADOER, Hero Cosmetics, and SOME BY MI at iDermaCare.',
   })
 
   const q = params.get('q') || ''

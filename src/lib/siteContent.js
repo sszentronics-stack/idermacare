@@ -57,17 +57,18 @@ export const DEFAULT_SITE_CONTENT = {
     image: '/products/story-trio.jpg',
     alt: 'Hero Mighty Patch, SOME BY MI toner, and SADOER collagen mask',
     heading: 'A short list, chosen carefully',
-    text: 'SS Zen Traders keeps three products in stock: the SADOER collagen mask, Hero Mighty Patch Invisible+, and SOME BY MI 30 Days Miracle Toner. Every order is confirmed on WhatsApp before it leaves the office in G-13/3, Islamabad.',
+    text: 'iDermaCare keeps three products in stock: the SADOER collagen mask, Hero Mighty Patch Invisible+, and SOME BY MI 30 Days Miracle Toner. Every order is confirmed on WhatsApp before it leaves the office in G-13/3, Islamabad.',
     linkLabel: 'Read our story',
     linkTo: '/about',
   },
   business: {
-    name: 'SS Zen Traders',
+    name: 'iDermaCare',
     address: 'Office#14, First Floor, Farooq 2D Plaza, G-13/3, Islamabad',
     phone: '03079594474',
-    email: 'info@sszentraders.com',
+    email: 'sales@idermacare.com',
     whatsapp: '923079594474',
-    whatsappGreeting: 'Hi SS Zen Traders! I have a question about your products.',
+    whatsappGreeting: 'Hi iDermaCare! I have a question about your products.',
+    paymentInstructions: '',
   },
   home: {
     featuredHeading: 'Featured products',
@@ -115,8 +116,8 @@ export const DEFAULT_SITE_CONTENT = {
     image: '/about/iderma-care.png',
     alt: 'iDermaCare clinical skincare',
     paragraphs: [
-      'SS Zen Traders keeps a short list of authentic skincare: the SADOER collagen mask, Hero Mighty Patch Invisible+, and SOME BY MI 30 Days Miracle Toner.',
-      'The office is at Office#14, First Floor, Farooq 2D Plaza, G-13/3, Islamabad. Call 03079594474 or email info@sszentraders.com. Every order is confirmed on WhatsApp, and cash on delivery is available.',
+      'iDermaCare keeps a short list of authentic skincare: the SADOER collagen mask, Hero Mighty Patch Invisible+, and SOME BY MI 30 Days Miracle Toner.',
+      'The office is at Office#14, First Floor, Farooq 2D Plaza, G-13/3, Islamabad. Call 03079594474 or email sales@idermacare.com. Every order is confirmed on WhatsApp, and cash on delivery is available.',
       'Always read the label on the product you receive. Packaging and ingredients can change, and our listings are for reference.',
     ],
   },
@@ -128,7 +129,7 @@ export const DEFAULT_SITE_CONTENT = {
   policies: {
     privacy: {
       title: 'Privacy policy',
-      body: 'SSzentronics collects only the information you share when you place an order — typically your name, WhatsApp number, city, and delivery address. We use this information to confirm and fulfill orders. We do not sell your personal information. Messages sent through WhatsApp are subject to WhatsApp’s own privacy terms. For questions, contact us on WhatsApp at +92 307 9594474.',
+      body: 'iDermaCare collects only the information you share when you place an order — typically your name, WhatsApp number, city, and delivery address. We use this information to confirm and fulfill orders. We do not sell your personal information. Messages sent through WhatsApp are subject to WhatsApp’s own privacy terms. For questions, contact us on WhatsApp at +92 307 9594474.',
     },
     shipping: {
       title: 'Shipping policy',
@@ -140,7 +141,7 @@ export const DEFAULT_SITE_CONTENT = {
     },
     terms: {
       title: 'Terms of service',
-      body: 'By shopping at SSzentronics you agree that product listings are for reference, prices may change without notice until an order is confirmed, and we may refuse or cancel orders in case of pricing errors, stock issues, or suspected fraud. Skincare results vary. You are responsible for reading labels and following directions. These terms are governed by the laws of Pakistan.',
+      body: 'By shopping at iDermaCare you agree that product listings are for reference, prices may change without notice until an order is confirmed, and we may refuse or cancel orders in case of pricing errors, stock issues, or suspected fraud. Skincare results vary. You are responsible for reading labels and following directions. These terms are governed by the laws of Pakistan.',
     },
   },
   products: fallbackProducts.map((product) => ({
@@ -269,6 +270,7 @@ export function normalizeSiteContent(input) {
       email: plain(source.business?.email, DEFAULT_SITE_CONTENT.business.email, 120),
       whatsapp: plain(source.business?.whatsapp, DEFAULT_SITE_CONTENT.business.whatsapp, 20).replace(/[^\d]/g, '') || DEFAULT_SITE_CONTENT.business.whatsapp,
       whatsappGreeting: text(source.business?.whatsappGreeting, DEFAULT_SITE_CONTENT.business.whatsappGreeting, 200),
+      paymentInstructions: text(source.business?.paymentInstructions, DEFAULT_SITE_CONTENT.business.paymentInstructions, 600),
     },
     home: {
       featuredHeading: text(source.home?.featuredHeading, DEFAULT_SITE_CONTENT.home.featuredHeading, 80),

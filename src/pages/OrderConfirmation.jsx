@@ -5,6 +5,7 @@ import * as ordersApi from '../repositories/orders.repository'
 import { formatMoney } from '../../backend/lib/money/index'
 import { useSiteContent, whatsAppHref } from '../lib/siteContent'
 import { isSupabaseConfigured } from '../lib/supabase/client'
+import OrderTimeline from '../components/OrderTimeline'
 
 const ORDER_STATUS_LABEL = {
   pending: 'Pending confirmation',
@@ -19,7 +20,7 @@ const ORDER_STATUS_LABEL = {
   refunded: 'Refunded',
 }
 
-const PAYMENT_METHOD_LABEL = { cod: 'Cash on Delivery', easypaisa: 'Easypaisa' }
+const PAYMENT_METHOD_LABEL = { cod: 'Cash on Delivery', easypaisa: 'Easypaisa', bank_transfer: 'Bank / mobile wallet transfer' }
 
 /**
  * Reused for both the immediate post-checkout confirmation (/order-confirmation/:id)
@@ -93,7 +94,7 @@ export default function OrderConfirmation() {
     return `${index + 1}. ${name}\nQuantity: ${item.quantity}\nAmount: ${formatMoney(item.lineTotal, { currency: order.currency })}`
   })
   const supportMessage = [
-    `Hi ${content.business?.name || 'SS Zen Traders'}! I have a question about my order ${order.orderNumber}.`,
+    `Hi ${content.business?.name || 'iDermaCare'}! I have a question about my order ${order.orderNumber}.`,
     '',
     'Items:',
     ...itemLines,
@@ -128,6 +129,16 @@ export default function OrderConfirmation() {
           <span className="capitalize">{order.deliveryMethod ?? 'standard'} delivery</span>
         </div>
       </div>
+
+      {order.paymentMethod === 'bank_transfer' && content.business?.paymentInstructions ? (
+        <div className="bg-meta p-6 mb-6">
+          <h2 className="font-medium mb-2">How to pay</h2>
+          <p className="text-sm" style={{ whiteSpace: 'pre-line' }}>{content.business.paymentInstructions}</p>
+          <p className="text-sm text-ink-soft mt-2">Please send the payment slip on WhatsApp with your order number {order.orderNumber}.</p>
+        </div>
+      ) : null}
+
+      <div className="mb-6"><OrderTimeline order={order} /></div>
 
       <h2 className="font-medium mb-3">Items</h2>
       <div className="space-y-3 mb-6">

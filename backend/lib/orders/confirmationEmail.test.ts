@@ -31,7 +31,7 @@ const order = {
 describe('order confirmation email', () => {
   it('includes the same order content shown on the confirmation page', () => {
     const message = buildOrderConfirmationMessage(order)
-    expect(message.subject).toBe('Your SS Zen Traders order SSZ-1001')
+    expect(message.subject).toBe('Your iDermaCare order SSZ-1001')
     expect(message.text).toContain('Order SSZ-1001 — Pending confirmation')
     expect(message.text).toContain('Hero Mighty Patch Invisible+ × 1 — Rs.4,400')
     expect(message.text).toContain('Total: Rs.4,600')
@@ -46,7 +46,7 @@ describe('order confirmation email', () => {
 
   it('posts the confirmation to the mail provider', async () => {
     let body = ''
-    const result = await sendOrderConfirmationEmail(order, { apiKey: 'test-key', from: 'Shop <info@sszentraders.com>' }, async (_url, init) => {
+    const result = await sendOrderConfirmationEmail(order, { apiKey: 'test-key', from: 'Shop <sales@idermacare.com>' }, async (_url, init) => {
       body = String(init?.body || '')
       return new Response('{}', { status: 200 })
     })
@@ -62,10 +62,43 @@ describe('order confirmation email', () => {
       return { ok: true }
     }) as unknown as typeof fetch
     const result = await sendOrderConfirmationEmail(order, { apiKey: 'k', notifyTo: 'store@example.com' }, fake)
-    expect(result).toEqual({ sent: true })
+    expect(result).toEqual({ sent: true, alert: { sent: true } })
     expect(calls.map((c) => c.to[0])).toEqual(['customer@example.com', 'store@example.com'])
     expect(calls[0]!.html).toContain('Thank you for your order')
     expect(calls[1]!.subject).toContain('New order SSZ-1001')
+  })
+
+  it('retries once when the provider is temporarily down', async () => {
+    let attempts = 0
+    const flaky = (async () => {
+      attempts += 1
+      return attempts === 1 ? { ok: false, status: 503 } : { ok: true, status: 200 }
+    }) as unknown as typeof fetch
+    const result = await sendOrderConfirmationEmail(order, { apiKey: 'k' }, flaky)
+    expect(result.sent).toBe(true)
+    expect(attempts).toBe(2)
+  })
+
+  it('does not retry a rejected request and reports why it failed', async () => {
+    let attempts = 0
+    const rejected = (async () => {
+      attempts += 1
+      return { ok: false, status: 403 }
+    }) as unknown as typeof fetch
+    const result = await sendOrderConfirmationEmail(order, { apiKey: 'k' }, rejected)
+    expect(result).toEqual({ sent: false, reason: 'mail-403' })
+    expect(attempts).toBe(1)
+  })
+
+  it('reports a failed store alert even when the customer email was sent', async () => {
+    let call = 0
+    const fake = (async () => {
+      call += 1
+      return call === 1 ? { ok: true, status: 200 } : { ok: false, status: 422 }
+    }) as unknown as typeof fetch
+    const result = await sendOrderConfirmationEmail(order, { apiKey: 'k', notifyTo: 'store@example.com' }, fake)
+    expect(result.sent).toBe(true)
+    expect(result.alert).toEqual({ sent: false, reason: 'mail-422' })
   })
 
   it('escapes customer-supplied text in the HTML', () => {
@@ -75,7 +108,7 @@ describe('order confirmation email', () => {
   })
 
   it('emails status updates only for customer-facing statuses', async () => {
-    expect(buildOrderStatusMessage(order, 'shipped')?.subject).toBe('Your SS Zen Traders order SSZ-1001 has shipped')
+    expect(buildOrderStatusMessage(order, 'shipped')?.subject).toBe('Your iDermaCare order SSZ-1001 has shipped')
     expect(buildOrderStatusMessage(order, 'packed')?.subject).toContain('is packed')
     expect(buildOrderStatusMessage(order, 'ready_for_pickup')).toBeNull()
     expect(await sendOrderStatusEmail(order, 'ready_for_pickup', { apiKey: 'k' })).toEqual({ sent: false, reason: 'no-template' })

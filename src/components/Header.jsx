@@ -6,6 +6,7 @@ import { useProducts } from '../hooks/useCatalog'
 import { suggestProducts } from '../lib/productSearch'
 import { formatPKR } from '../data/products'
 import Logo from './Logo'
+import SocialLinks from './SocialLinks'
 
 const BRANDS = [
   { to: '/shop?brand=SADOER', label: 'SADOER' },
@@ -72,10 +73,12 @@ export default function Header() {
               </ul>
             </details>
             <NavLink className={({ isActive }) => `ssz-nav__item${isActive ? ' is-active' : ''}`} to="/gallery"><span>Gallery</span></NavLink>
+            <NavLink className={({ isActive }) => `ssz-nav__item${isActive ? ' is-active' : ''}`} to="/blog"><span>Blog</span></NavLink>
             <NavLink className={({ isActive }) => `ssz-nav__item${isActive ? ' is-active' : ''}`} to="/about"><span>About us</span></NavLink>
             <NavLink className={({ isActive }) => `ssz-nav__item${isActive ? ' is-active' : ''}`} to="/contact"><span>Contact</span></NavLink>
           </nav>
           <div className="ssz-header__icons">
+            <SocialLinks className="ssz-social--header" />
             <button type="button" className="ssz-icon-btn" aria-label="Search" aria-expanded={searchOpen} onClick={() => setSearchOpen((open) => !open)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
             </button>
@@ -123,9 +126,11 @@ export default function Header() {
             <Link key={brand.to} to={brand.to} onClick={() => setMenuOpen(false)}>{brand.label}</Link>
           ))}
           <Link to="/gallery" onClick={() => setMenuOpen(false)}>Gallery</Link>
+          <Link to="/blog" onClick={() => setMenuOpen(false)}>Blog</Link>
           <Link to="/about" onClick={() => setMenuOpen(false)}>About us</Link>
           <Link to="/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
           <Link to={accountTo} onClick={() => setMenuOpen(false)}>{isAuthenticated ? 'My account' : 'Account'}</Link>
+          <SocialLinks className="ssz-social--drawer" />
         </nav>
       </div>
     </>

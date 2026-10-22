@@ -27,7 +27,7 @@ export function bannerForProduct(product) {
   const known = SHOP_BANNERS[product.slug]
   if (known) return known
   return {
-    eyebrow: product.category || product.brand || 'SSzentronics',
+    eyebrow: product.category || product.brand || 'iDermaCare',
     headline: product.tagline || product.shortName || product.name,
     body: product.subtitle || product.highlights?.[0] || 'Authentic skincare, confirmed on WhatsApp.',
     image: product.images?.[0],

@@ -10,7 +10,7 @@ import { getAppliedInfluencerPromo, normalizePhone, quoteInfluencerCode, recordI
 import { useSeo } from '../hooks/useSeo'
 
 export default function Cart() {
-  useSeo({ title: 'Your cart | SS Zen Traders', noindex: true })
+  useSeo({ title: 'Your cart | iDermaCare', noindex: true })
   const content = useSiteContent()
   const { profile, customer, user } = useAuth()
   const configured = isSupabaseConfigured()

@@ -336,7 +336,7 @@ export const checkoutSchema = z
     phone: pakistaniPhoneSchema.optional(),
     shippingAddress: checkoutShippingAddressSchema,
     deliveryMethod: z.enum(['standard', 'express']).default('standard'),
-    paymentMethod: z.enum(['cod', 'easypaisa']).default('cod'),
+    paymentMethod: z.enum(['cod', 'easypaisa', 'bank_transfer']).default('cod'),
     customerNotes: z.string().trim().max(2000).optional(),
     source: z.enum(['web', 'whatsapp', 'mobile', 'admin']).default('web'),
     /** Phase 13: optional coupon code applied at checkout — validated and priced server-side only, see backend/services/promotions/promotions.service.ts. */

@@ -5,6 +5,7 @@ import { useAdminToast } from '../../../context/admin/AdminToastContext'
 import { getOrder, cancelOrder, updateOrderStatus } from '../../../repositories/orders.repository'
 import { getOrderTrackingTimeline } from '../../../repositories/admin/shipments.admin.repository'
 import { formatMoney } from '../../../../backend/lib/money/index'
+import OrderPrintSheet from '../../../components/admin/OrderPrintSheet'
 
 const CANCELLABLE = ['pending', 'confirmed']
 const NEXT_STEP = {
@@ -21,6 +22,7 @@ export default function OrderDetail() {
   const toast = useAdminToast()
   const { confirm, dialog } = useConfirm()
   const [state, setState] = useState({ status: 'loading', order: null, error: null })
+  const [printMode, setPrintMode] = useState('invoice')
   const [tracking, setTracking] = useState(null)
 
   async function reload() {
@@ -57,6 +59,12 @@ export default function OrderDetail() {
 
   const next = NEXT_STEP[o.orderStatus]
 
+  function printSheet(nextMode) {
+    setPrintMode(nextMode)
+    // Wait for the sheet to render in the chosen mode before opening the print dialog.
+    setTimeout(() => window.print(), 50)
+  }
+
   async function handleAdvance() {
     const ok = await confirm({ title: `${next.label}?`, body: 'The customer is emailed about this update.', confirmLabel: next.label })
     if (!ok) return
@@ -74,6 +82,7 @@ export default function OrderDetail() {
   return (
     <div className="admin-page">
       {dialog}
+      <OrderPrintSheet order={o} mode={printMode} />
       <AdminBreadcrumb to="/admin/orders" label="Orders" />
       <header className="admin-page-header">
         <h1>Order {o.orderNumber}</h1>
@@ -82,6 +91,8 @@ export default function OrderDetail() {
           {next && (
             <button type="button" className="admin-btn admin-btn-primary" onClick={handleAdvance}>{next.label}</button>
           )}
+          <button type="button" className="admin-btn admin-btn-ghost" onClick={() => printSheet('invoice')}>Print invoice</button>
+          <button type="button" className="admin-btn admin-btn-ghost" onClick={() => printSheet('slip')}>Print packing slip</button>
           {CANCELLABLE.includes(o.orderStatus) && (
             <button type="button" className="admin-btn admin-btn-danger" onClick={handleCancel}>Request cancellation</button>
           )}

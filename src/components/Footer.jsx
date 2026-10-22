@@ -24,6 +24,7 @@ export default function Footer() {
               <li><Link to="/">Home</Link></li>
               <li><Link to="/shop">Shop</Link></li>
               <li><Link to="/gallery">Gallery</Link></li>
+              <li><Link to="/blog">Blog</Link></li>
               <li><Link to="/about">About us</Link></li>
               <li><Link to="/contact">Contact</Link></li>
             </ul>
@@ -31,6 +32,7 @@ export default function Footer() {
           <div className="ssz-reveal">
             <h2>Customer care</h2>
             <ul>
+              <li><Link to="/track-order">Track your order</Link></li>
               <li><Link to="/shipping">Shipping policy</Link></li>
               <li><Link to="/refund">Refunds</Link></li>
               <li><Link to="/privacy">Privacy policy</Link></li>

@@ -40,6 +40,59 @@ import * as orders from '../../../backend/services/orders/orders.service.ts'
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../../../backend/lib/orders/confirmationEmail.ts'
 
 const IDEMPOTENCY_SCOPE = 'order.create'
+const STORE_ALERT_EMAIL = 'sales@idermacare.com'
+const MAX_ORDERS_PER_HOUR = 5
+const MAX_LOOKUPS_PER_10_MIN = 20
+
+type Admin = ReturnType<typeof getSupabaseAdminClient>
+
+/** Accepts both the documented names and the older ones so a fresh setup cannot silently skip email. */
+function mailEnv() {
+  return {
+    apiKey: Deno.env.get('RESEND_API_KEY') ?? Deno.env.get('EMAIL_PROVIDER_API_KEY'),
+    from: Deno.env.get('ORDER_FROM_EMAIL') ?? Deno.env.get('EMAIL_FROM_ADDRESS'),
+    notifyTo: Deno.env.get('ORDER_NOTIFY_EMAIL') ?? STORE_ALERT_EMAIL,
+  }
+}
+
+/** Runs slow work (email) after the response is sent so checkout does not wait on the mail provider. */
+function inBackground(task: Promise<unknown>) {
+  const runtime = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }).EdgeRuntime
+  if (runtime?.waitUntil) runtime.waitUntil(task)
+  else void task
+}
+
+/** Failed emails used to vanish into the logs; this leaves a visible trail in the admin Activity log. */
+async function logEmailFailure(admin: Admin, kind: string, orderId: string, orderNumber: string, reason?: string) {
+  try {
+    await writeAuditLog(admin, {
+      actor: null,
+      actorType: 'system',
+      action: 'order.email_failed',
+      entityType: 'order',
+      entityId: orderId,
+      metadata: { kind, orderNumber, reason: reason ?? 'unknown' },
+    })
+  } catch (error) {
+    console.error('Could not record an email failure.', error)
+  }
+}
+
+function clientIp(req: Request): string | undefined {
+  const forwarded = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  return forwarded || undefined
+}
+
+async function countRecent(admin: Admin, action: string, ip: string, minutes: number): Promise<number> {
+  const since = new Date(Date.now() - minutes * 60_000).toISOString()
+  const { count } = await admin
+    .from('audit_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('action', action)
+    .eq('ip', ip)
+    .gte('created_at', since)
+  return count ?? 0
+}
 
 async function loadIdempotencyRecord(admin: ReturnType<typeof getSupabaseAdminClient>, key: string): Promise<IdempotencyRecord | null> {
   const { data } = await admin.from('idempotency_keys').select('*').eq('key', key).maybeSingle()
@@ -74,6 +127,14 @@ Deno.serve(
 
     if (segments[0] === 'lookup' && req.method === 'POST') {
       const input = parseOrThrow(guestOrderLookupSchema, body)
+      // Stop people guessing order numbers: cap lookups per connection.
+      const ip = clientIp(req)
+      if (ip) {
+        if ((await countRecent(admin, 'order.lookup', ip, 10)) >= MAX_LOOKUPS_PER_10_MIN) {
+          throw new ConflictError('Too many lookups. Please try again in a few minutes.')
+        }
+        await writeAuditLog(admin, { actor: null, actorType: 'customer', action: 'order.lookup', entityType: 'order', ip })
+      }
       return okResponse(await orders.lookupGuestOrder(admin, input.orderNumber, input.email))
     }
 
@@ -85,6 +146,20 @@ Deno.serve(
       const idempotencyKey = req.headers.get('x-idempotency-key')
       if (!idempotencyKey) {
         throw new ValidationError('Missing X-Idempotency-Key header.')
+      }
+
+      // Slow down bulk fake orders: per network address and per phone/email.
+      const ip = clientIp(req)
+      if (ip && (await countRecent(admin, 'order.created', ip, 60)) >= MAX_ORDERS_PER_HOUR) {
+        throw new ConflictError('Too many orders from this connection. Please wait a while or contact us on WhatsApp.')
+      }
+      const since = new Date(Date.now() - 60 * 60_000).toISOString()
+      const contacts = [input.email ? `email.eq.${input.email}` : null, input.phone ? `phone.eq.${input.phone}` : null].filter(Boolean).join(',')
+      if (contacts) {
+        const { count } = await admin.from('orders').select('id', { count: 'exact', head: true }).or(contacts).gte('created_at', since)
+        if ((count ?? 0) >= MAX_ORDERS_PER_HOUR) {
+          throw new ConflictError('Too many recent orders with these contact details. Please contact us on WhatsApp.')
+        }
       }
 
       const existing = await loadIdempotencyRecord(admin, idempotencyKey)
@@ -106,15 +181,14 @@ Deno.serve(
 
       try {
         const order = await orders.createOrder(admin, caller.id, input)
-        try {
-          await sendOrderConfirmationEmail(order, {
-            apiKey: Deno.env.get('RESEND_API_KEY'),
-            from: Deno.env.get('ORDER_FROM_EMAIL'),
-            notifyTo: Deno.env.get('ORDER_NOTIFY_EMAIL'),
-          })
-        } catch (mailError) {
-          console.error('Order confirmation email was not sent.', mailError)
-        }
+        inBackground(
+          sendOrderConfirmationEmail(order, mailEnv())
+            .then(async (result) => {
+              if (!result.sent) await logEmailFailure(admin, 'confirmation', order.id, order.orderNumber, result.reason)
+              if (result.alert && !result.alert.sent) await logEmailFailure(admin, 'store-alert', order.id, order.orderNumber, result.alert.reason)
+            })
+            .catch((mailError) => logEmailFailure(admin, 'confirmation', order.id, order.orderNumber, mailError instanceof Error ? mailError.message : String(mailError))),
+        )
         await saveIdempotencyRecord(admin, { ...pending, status: 'completed', responseReference: order.id })
         await writeAuditLog(admin, {
           actor: caller.id,
@@ -123,6 +197,7 @@ Deno.serve(
           entityType: 'order',
           entityId: order.id,
           metadata: { orderNumber: order.orderNumber, grandTotal: order.grandTotal, itemCount: order.items.length },
+        ip: clientIp(req),
         })
         return okResponse(order, 201)
       } catch (err) {
@@ -167,14 +242,13 @@ Deno.serve(
         entityId: orderId,
         metadata: { to: input.status, note: input.note ?? null },
       })
-      try {
-        await sendOrderStatusEmail(order, input.status, {
-          apiKey: Deno.env.get('RESEND_API_KEY'),
-          from: Deno.env.get('ORDER_FROM_EMAIL'),
-        }, input.note)
-      } catch (mailError) {
-        console.error('Order status email was not sent.', mailError)
-      }
+      inBackground(
+        sendOrderStatusEmail(order, input.status, mailEnv(), input.note)
+          .then(async (result) => {
+            if (!result.sent && result.reason !== 'no-template') await logEmailFailure(admin, `status:${input.status}`, order.id, order.orderNumber, result.reason)
+          })
+          .catch((mailError) => logEmailFailure(admin, `status:${input.status}`, order.id, order.orderNumber, mailError instanceof Error ? mailError.message : String(mailError))),
+      )
       return okResponse(order)
     }
 

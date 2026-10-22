@@ -116,6 +116,10 @@ export interface OrderSummary {
   }
   deliveryMethod: string | null
   placedAt: string
+  /** Status changes, oldest first. Only present on single-order reads. */
+  history?: { status: string; at: string; note: string | null }[]
+  /** Courier details once a shipment exists. Only present on single-order reads. */
+  tracking?: { courier: string; trackingNumber: string | null; status: string } | null
   items: {
     id: string
     productId: string | null
@@ -192,7 +196,35 @@ async function fetchOrderWithItems(db: SupabaseClient, orderId: string): Promise
     .order('created_at', { ascending: true })
   if (itemsError) throw itemsError
 
-  return mapOrder(order as OrderRow, (items ?? []) as OrderItemRow[])
+  const summary = mapOrder(order as OrderRow, (items ?? []) as OrderItemRow[])
+
+  const { data: history } = await db
+    .from('order_status_history')
+    .select('to_status, note, created_at')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: true })
+  summary.history = (history ?? []).map((row) => ({
+    status: row.to_status as string,
+    at: row.created_at as string,
+    note: (row.note as string | null) ?? null,
+  }))
+
+  const { data: shipment } = await db
+    .from('shipments')
+    .select('provider, tracking_number, awb_number, status')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  summary.tracking = shipment
+    ? {
+        courier: String(shipment.provider),
+        trackingNumber: (shipment.tracking_number as string | null) ?? (shipment.awb_number as string | null) ?? null,
+        status: String(shipment.status),
+      }
+    : null
+
+  return summary
 }
 
 /**
@@ -370,7 +402,7 @@ export async function createOrder(db: SupabaseClient, profileId: string, input: 
 
   await db.from('payments').insert({
     order_id: order.id,
-    provider: input.paymentMethod === 'easypaisa' ? 'easypaisa' : 'cod',
+    provider: input.paymentMethod === 'easypaisa' ? 'easypaisa' : input.paymentMethod === 'bank_transfer' ? 'manual' : 'cod',
     payment_method: input.paymentMethod,
     amount: totals.grandTotal,
     currency: cart.currency,

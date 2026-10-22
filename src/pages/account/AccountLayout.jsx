@@ -26,7 +26,7 @@ export default function AccountLayout() {
   void revision
   const displayName = profile?.firstName || local?.firstName || user?.email
 
-  useSeo({ title: 'My Account | SSzentronics', noindex: true })
+  useSeo({ title: 'My Account | iDermaCare', noindex: true })
 
   return (
     <div className="container py-4 py-lg-5">
@@ -34,7 +34,7 @@ export default function AccountLayout() {
         <aside className="col-lg-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <p className="text-uppercase small text-secondary mb-1">SSzentronics</p>
+              <p className="text-uppercase small text-secondary mb-1">iDermaCare</p>
               <h1 className="h3 mb-1">My account</h1>
               <p className="text-secondary mb-4">{displayName ? `Welcome back, ${displayName}.` : 'Welcome back.'}</p>
               <nav className="d-flex flex-column" aria-label="Account">

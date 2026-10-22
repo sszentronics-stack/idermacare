@@ -13,6 +13,9 @@ import Product from './pages/Product'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import OrderConfirmation from './pages/OrderConfirmation'
+import TrackOrder from './pages/TrackOrder'
+import Blog from './pages/Blog'
+import BlogPost from './pages/BlogPost'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Policy from './pages/Policy'
@@ -32,6 +35,7 @@ import RequestReturn from './pages/account/RequestReturn'
 import ComingSoon from './pages/account/ComingSoon'
 import Loyalty from './pages/account/Loyalty'
 import RequireAdmin from './components/admin/RequireAdmin'
+import { startAnalytics, trackPageView } from './lib/analytics'
 
 /**
  * Phase 16 — production hardening. The entire /admin/* console (a large,
@@ -80,6 +84,8 @@ function ScrollToTop() {
   const { pathname } = useLocation()
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
+    startAnalytics()
+    if (!pathname.startsWith('/admin')) trackPageView(pathname)
   }, [pathname])
   return null
 }
@@ -97,6 +103,9 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/gallery" element={<Gallery />} />
+                <Route path="/track-order" element={<TrackOrder />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/products/:slug" element={<Product />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />

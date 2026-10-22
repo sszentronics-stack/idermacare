@@ -4,6 +4,7 @@ import { getPublicImageUrl } from '../lib/supabase/storage'
 import { toMajorUnits } from '../../backend/lib/money'
 import * as cartApi from '../repositories/cart.repository'
 import { useAuth } from './AuthContext'
+import { trackEvent } from '../lib/analytics'
 
 const CartContext = createContext(null)
 const STORAGE_KEY = 'aura-beauty-cart'
@@ -185,6 +186,7 @@ export function CartProvider({ children }) {
   const addItem = useCallback(
     async (product, qty = 1) => {
       rememberLocalItem(product, qty)
+      trackEvent('AddToCart', { value: (product.price || 0) * qty, id: product.variantId ?? product.id, quantity: qty })
       const variantId = product.variantId ?? (isServerId(product.id) ? product.id : undefined)
       if (!configured || !isServerId(variantId)) return
       try {

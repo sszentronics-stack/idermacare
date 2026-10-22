@@ -137,7 +137,7 @@ export default function Profile() {
             onChange={(e) => setField('marketingOptIn')(e.target.checked)}
           />
           <label className="form-check-label" htmlFor="marketing">
-            Send me offers and updates from SSzentronics.
+            Send me offers and updates from iDermaCare.
           </label>
         </div>
 

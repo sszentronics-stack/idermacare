@@ -48,7 +48,7 @@ export default function HeroSlider() {
         <img src={slide.image} alt="" className="hero-photo-bg" />
         <div className="hero-photo-overlay" />
         <div className="hero-solid-copy">
-          <p className="hero-solid-eyebrow">SSzentronics</p>
+          <p className="hero-solid-eyebrow">iDermaCare</p>
           <h1 className="hero-solid-title">{slide.title}</h1>
           <p className="hero-solid-sub">{slide.subtitle}</p>
           <span className="hero-solid-cta">Shop now</span>

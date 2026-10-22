@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useSeo } from '../../hooks/useSeo'
 
 export default function Login() {
-  useSeo({ title: 'Sign In | SSzentronics', noindex: true })
+  useSeo({ title: 'Sign In | iDermaCare', noindex: true })
   const { login, configured, isAuthenticated, initializing } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -90,7 +90,7 @@ export default function Login() {
         </form>
 
         <p className="auth-footer-link">
-          New to SSzentronics?{' '}
+          New to iDermaCare?{' '}
           <Link to={`/register${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}>
             Create an account
           </Link>

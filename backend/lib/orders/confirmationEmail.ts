@@ -28,7 +28,7 @@ export interface ConfirmationOrder {
   items: ConfirmationLine[]
 }
 
-const PAYMENT_LABEL: Record<string, string> = { cod: 'Cash on Delivery', easypaisa: 'Easypaisa' }
+const PAYMENT_LABEL: Record<string, string> = { cod: 'Cash on Delivery', easypaisa: 'Easypaisa', bank_transfer: 'Bank / mobile wallet transfer' }
 const STATUS_LABEL: Record<string, string> = { pending: 'Pending confirmation', confirmed: 'Confirmed' }
 
 function money(amount: number, currency?: string | null) {
@@ -72,14 +72,14 @@ export function buildOrderConfirmationMessage(order: ConfirmationOrder) {
     'Shipping to',
     shipTo || 'Address confirmed at checkout',
     '',
-    'SS Zen Traders',
+    'iDermaCare',
     'Office#14, First Floor, Farooq 2D Plaza, G-13/3, Islamabad',
     '03079594474',
     'sales@idermacare.com',
   ]
 
   return {
-    subject: `Your SS Zen Traders order ${order.orderNumber}`,
+    subject: `Your iDermaCare order ${order.orderNumber}`,
     text: lines.join('\n'),
   }
 }
@@ -91,7 +91,7 @@ export interface MailEnv {
   notifyTo?: string | null
 }
 
-const BRAND = 'SS Zen Traders'
+const BRAND = 'iDermaCare'
 const DEFAULT_FROM = `${BRAND} <sales@idermacare.com>`
 
 function esc(value: unknown) {
@@ -172,7 +172,7 @@ async function sendMail(
 ): Promise<{ sent: boolean; reason?: string }> {
   if (!message.to) return { sent: false, reason: 'no-email' }
   if (!env.apiKey) return { sent: false, reason: 'not-configured' }
-  const response = await fetchImpl('https://api.resend.com/emails', {
+  const request = {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -182,9 +182,21 @@ async function sendMail(
       text: message.text,
       ...(message.html ? { html: message.html } : {}),
     }),
-  })
-  if (!response.ok) return { sent: false, reason: `mail-${response.status}` }
-  return { sent: true }
+  }
+  let reason = 'mail-failed'
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetchImpl('https://api.resend.com/emails', request)
+      if (response.ok) return { sent: true }
+      reason = `mail-${response.status}`
+      // Retry only when the provider is busy or down; a 4xx will not fix itself.
+      if (response.status < 500 && response.status !== 429) break
+    } catch (error) {
+      reason = `mail-network: ${error instanceof Error ? error.message : 'unknown error'}`
+    }
+    if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 800))
+  }
+  return { sent: false, reason }
 }
 
 /** Sends the confirmation when a mail key is configured, plus a new-order alert to the store. */
@@ -192,7 +204,7 @@ export async function sendOrderConfirmationEmail(
   order: ConfirmationOrder,
   env: MailEnv,
   fetchImpl: typeof fetch = fetch,
-): Promise<{ sent: boolean; reason?: string }> {
+): Promise<{ sent: boolean; reason?: string; alert?: { sent: boolean; reason?: string } }> {
   const to = String(order.email || '').trim()
   const message = buildOrderConfirmationMessage(order)
   const result = await sendMail(
@@ -202,11 +214,12 @@ export async function sendOrderConfirmationEmail(
   )
   const notifyTo = String(env.notifyTo || '').trim()
   if (notifyTo) {
-    await sendMail(
+    const alert = await sendMail(
       env,
       { to: notifyTo, subject: `New order ${order.orderNumber} — ${money(order.grandTotal, order.currency)}`, text: message.text, html: buildOrderConfirmationHtml(order, 'New order received') },
       fetchImpl,
-    ).catch(() => undefined)
+    ).catch((error) => ({ sent: false, reason: error instanceof Error ? error.message : 'alert-failed' }))
+    return { ...result, alert }
   }
   return result
 }
