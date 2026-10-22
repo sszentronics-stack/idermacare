@@ -195,6 +195,7 @@ details[open] > .ssz-menu__panel { animation: ssz-menu-open var(--ssz-t-default)
 @media (min-width: 1200px) { .ssz-banner { height: 624px; } }
 .ssz-banner__slide { grid-area: 1 / 1; position: relative; display: flex; align-items: center; justify-content: flex-start; opacity: 0; visibility: hidden; transition: opacity var(--ssz-t-long) ease-in-out, visibility 0s linear var(--ssz-t-long); }
 .ssz-banner__slide.is-active { opacity: 1; visibility: visible; transition-delay: 0s; }
+.ssz-banner__slide picture { display: contents; }
 .ssz-banner__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .ssz-banner__slide::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 42%, rgba(0,0,0,0) 68%); }
 .ssz-banner__content { position: relative; z-index: 1; max-width: 460px; padding: 0 24px 0 var(--ssz-gutter); text-align: left; }
@@ -395,8 +396,9 @@ details[open] > .ssz-menu__panel { animation: ssz-menu-open var(--ssz-t-default)
   .ssz-section__head { align-items: flex-start; flex-wrap: wrap; margin-bottom: 20px; }
   .ssz-banner { height: auto; min-height: 520px; }
   .ssz-banner__slide { align-items: flex-end; justify-content: center; }
-  .ssz-banner__slide::after { background: linear-gradient(to top, rgba(0, 0, 0, .82) 0%, rgba(0, 0, 0, .62) 42%, rgba(0, 0, 0, .28) 70%, rgba(0, 0, 0, .12) 100%); }
-  .ssz-banner__content { width: 100%; max-width: none; margin: 0; padding: 22px 16px 52px; text-align: center; background: linear-gradient(to top, rgba(18, 18, 18, .9), rgba(18, 18, 18, .74)); }
+  /* Long, eased fade: dark only right behind the text and melting away smoothly towards the picture. */
+  .ssz-banner__slide::after { background: linear-gradient(to top, rgba(0, 0, 0, .66) 0%, rgba(0, 0, 0, .62) 10%, rgba(0, 0, 0, .54) 22%, rgba(0, 0, 0, .43) 34%, rgba(0, 0, 0, .31) 46%, rgba(0, 0, 0, .2) 58%, rgba(0, 0, 0, .11) 70%, rgba(0, 0, 0, .05) 82%, rgba(0, 0, 0, .015) 92%, rgba(0, 0, 0, 0) 100%); }
+  .ssz-banner__content { width: 100%; max-width: none; margin: 0; padding: 22px 16px 52px; text-align: center; background: none; text-shadow: 0 1px 10px rgba(0, 0, 0, .35); }
   .ssz-banner__heading { font-size: 30px; line-height: 1.2; }
   .ssz-banner__actions { justify-content: center; }
   .ssz-banner__btn { padding: 12px 18px; }

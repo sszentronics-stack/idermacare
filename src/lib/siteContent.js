@@ -234,6 +234,8 @@ function slideItem(incoming, index) {
   const actionSource = incomingActions.length ? incomingActions : fallback.actions
   return {
     image: path(incoming?.image, fallback.image),
+    // Optional portrait picture used on phones (screens under 750 px wide); empty means use `image`.
+    mobileImage: incoming?.mobileImage === '' ? '' : path(incoming?.mobileImage, fallback.mobileImage || ''),
     heading: text(incoming?.heading, fallback.heading, 120),
     text: text(incoming?.text, fallback.text, 240),
     actions: actionSource.map((action, actionIndex) => {

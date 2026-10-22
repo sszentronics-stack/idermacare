@@ -224,7 +224,8 @@ export default function SiteContent() {
                 onMove={(itemIndex, step) => patch((current) => ({ ...current, slides: moveItem(current.slides, itemIndex, step) }))}
                 onRemove={(itemIndex) => patch((current) => ({ ...current, slides: current.slides.filter((_, i) => i !== itemIndex) }))}
               />
-              <ImageField id={`slide-image-${index}`} label="Banner picture" hint="Wide pictures work best. JPG, PNG or WebP." folder="banners" value={slide.image} onChange={(value) => patch((current) => ({ ...current, slides: current.slides.map((item, i) => i === index ? { ...item, image: value } : item) }))} />
+              <ImageField id={`slide-image-${index}`} label="Banner picture (computer and tablet)" hint="Wide picture, 2400 x 1000 px. JPG, PNG or WebP." folder="banners" value={slide.image} onChange={(value) => patch((current) => ({ ...current, slides: current.slides.map((item, i) => i === index ? { ...item, image: value } : item) }))} />
+              <ImageField id={`slide-mobile-image-${index}`} label="Banner picture for phones (optional)" hint="Tall picture, 1080 x 1440 px. Leave empty to use the picture above." folder="banners" value={slide.mobileImage || ''} onChange={(value) => patch((current) => ({ ...current, slides: current.slides.map((item, i) => i === index ? { ...item, mobileImage: value } : item) }))} />
               <Field id={`slide-heading-${index}`} label="Heading" value={slide.heading} onChange={(value) => patch((current) => ({ ...current, slides: current.slides.map((item, i) => i === index ? { ...item, heading: value } : item) }))} />
               <Field id={`slide-text-${index}`} label="Text" value={slide.text} rows="3" onChange={(value) => patch((current) => ({ ...current, slides: current.slides.map((item, i) => i === index ? { ...item, text: value } : item) }))} />
               {slide.actions.map((action, actionIndex) => (
@@ -247,7 +248,7 @@ export default function SiteContent() {
               className="admin-btn admin-btn-ghost"
               onClick={() => patch((current) => ({
                 ...current,
-                slides: [...current.slides, { image: '', heading: 'New banner', text: '', actions: [{ label: 'Get this product', to: '/shop' }] }],
+                slides: [...current.slides, { image: '', mobileImage: '', heading: 'New banner', text: '', actions: [{ label: 'Get this product', to: '/shop' }] }],
               }))}
             >
               Add banner

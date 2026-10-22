@@ -169,7 +169,10 @@ export default function Home() {
           const action = item.actions[0] || { to: '/shop', label: 'Get this product' }
           return (
           <div key={`${item.heading}-${index}`} className={`ssz-banner__slide${index === slide % slides.length ? ' is-active' : ''}`}>
-            <img className="ssz-banner__media" src={item.image} alt="" width="1024" height="415" />
+            <picture>
+              {item.mobileImage ? <source media="(max-width: 749px)" srcSet={item.mobileImage} /> : null}
+              <img className="ssz-banner__media" src={item.image} alt="" width="2400" height="1000" />
+            </picture>
             <div className="ssz-banner__content">
               {index === 0 ? <h1 className="ssz-banner__heading">{item.heading}</h1> : <h2 className="ssz-banner__heading">{item.heading}</h2>}
               <p className="ssz-banner__text">{item.text}</p>
