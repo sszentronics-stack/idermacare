@@ -423,8 +423,8 @@ details[open] > .ssz-menu__panel { animation: ssz-menu-open var(--ssz-t-default)
 /* Social links */
 .ssz-social { display: flex; align-items: center; }
 .ssz-social__link { width: 36px; height: 44px; display: grid; place-items: center; color: inherit; transition: color var(--ssz-t-default); }
-.ssz-social__link:hover { color: var(--ssz-rose-gold); }
-.ssz-social__link svg { width: 20px; height: 20px; }
+.ssz-social__link:hover { opacity: 0.85; }
+.ssz-social__link svg { width: 24px; height: 24px; }
 .ssz-social--drawer { padding: 8px 16px; }
 @media (max-width: 991px) { .ssz-social--header { display: none; } }
 

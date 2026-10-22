@@ -16,12 +16,47 @@ export const SOCIAL_LINKS = [
   },
 ]
 
+const BRAND_BADGE = {
+  Instagram: (
+    <>
+      <defs>
+        <radialGradient id="ssz-ig" cx="30%" cy="107%" r="140%">
+          <stop offset="0" stopColor="#FED576" />
+          <stop offset="0.26" stopColor="#F47133" />
+          <stop offset="0.61" stopColor="#BC3081" />
+          <stop offset="1" stopColor="#4C63D2" />
+        </radialGradient>
+      </defs>
+      <rect width="24" height="24" rx="6" fill="url(#ssz-ig)" />
+    </>
+  ),
+  Facebook: <rect width="24" height="24" rx="6" fill="#1877F2" />,
+  TikTok: <rect width="24" height="24" rx="6" fill="#000" />,
+}
+
+function SocialGlyph({ link }) {
+  if (link.label === 'TikTok') {
+    return (
+      <>
+        <path d={link.path} transform="translate(-0.7 -0.5)" stroke="#25F4EE" />
+        <path d={link.path} transform="translate(0.7 0.5)" stroke="#FE2C55" />
+        <path d={link.path} stroke="#fff" />
+      </>
+    )
+  }
+  if (link.label === 'Facebook') return <path d={link.path} fill="#fff" stroke="none" />
+  return <path d={link.path} stroke="#fff" />
+}
+
 export default function SocialLinks({ className = '' }) {
   return (
     <div className={`ssz-social ${className}`.trim()}>
       {SOCIAL_LINKS.map((link) => (
         <a key={link.label} className="ssz-social__link" href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label} title={link.label}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={link.path} /></svg>
+          <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            {BRAND_BADGE[link.label]}
+            <SocialGlyph link={link} />
+          </svg>
         </a>
       ))}
     </div>
