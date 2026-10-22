@@ -27,7 +27,7 @@ export const products = [
     shortName: 'Collagen Anti-Aging Mask',
     tagline: 'Replenish collagen, restore youthful skin',
     subtitle: '25g collagen firming sheet mask',
-    price: 540,
+    price: 549,
     compareAt: 0,
     badge: 'new',
     featured: true,
