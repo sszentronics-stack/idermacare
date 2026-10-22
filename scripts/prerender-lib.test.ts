@@ -46,7 +46,7 @@ describe('prerender helpers', () => {
     expect(html).toContain('<title>Hero Patch | iDermaCare</title>')
     expect(html).toContain('<meta name="description" content="A thin patch." />')
     expect(html).not.toContain('old description')
-    expect(html).toContain('<link rel="canonical" href="https://idermacare.com/products/hero" />')
+    expect(html).toContain('<link rel="canonical" href="https://idermacare.com/products/hero/" />')
     expect(html).toContain('<meta property="og:type" content="product" />')
     expect(html).toContain('<meta property="og:image" content="https://idermacare.com/products/hero/1.jpg" />')
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
@@ -72,8 +72,8 @@ describe('prerender helpers', () => {
       ctx,
     )
     expect(html).toContain('"@type":"BlogPosting"')
-    expect(html).toContain('<div id="root"></div>')
-    expect(html).toContain('<noscript><main><h1>Post</h1><p>Hello &lt;world&gt;</p></main></noscript>')
+    expect(html).toContain('<div id="root">')
+    expect(html).toContain('<main><h1>Post</h1><p>Hello &lt;world&gt;</p></main>')
   })
 
   it('escapes the page title', () => {

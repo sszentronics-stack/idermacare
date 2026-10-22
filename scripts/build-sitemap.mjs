@@ -27,7 +27,7 @@ const configured = (env.VITE_APP_URL || '').replace(/\/+$/, '')
 const site = configured && !/localhost|127\.0\.0\.1/.test(configured) ? configured : 'https://idermacare.com'
 const today = new Date().toISOString().slice(0, 10)
 
-const staticPaths = ['/', '/shop', '/gallery', '/blog', '/about', '/contact', '/track-order', '/shipping', '/refund', '/privacy', '/terms']
+const staticPaths = ['/', '/shop', '/gallery', '/blog', '/about', '/contact', '/shipping', '/refund', '/privacy', '/terms']
 
 // Blog slugs live in src/data/blogPosts.js; read them without importing browser code.
 const blogSource = readFileSync('src/data/blogPosts.js', 'utf8')
@@ -48,7 +48,7 @@ if (env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY) {
 
 const urls = [...staticPaths, ...blogPaths, ...productPaths]
 const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
-  .map((path) => `  <url><loc>${site}${path}</loc><lastmod>${today}</lastmod></url>`)
+  .map((path) => `  <url><loc>${site}${path === '/' ? '/' : `${path}/`}</loc><lastmod>${today}</lastmod></url>`)
   .join('\n')}\n</urlset>\n`
 writeFileSync('public/sitemap.xml', xml)
 

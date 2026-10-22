@@ -69,7 +69,7 @@ export function useSeo({ title, description, image, noindex } = {}) {
       setMetaTag('property', 'og:image', image ? new URL(image, window.location.origin).href : image),
       setMetaTag('name', 'twitter:card', image ? 'summary_large_image' : 'summary'),
       setMetaTag('name', 'robots', noindex ? 'noindex, nofollow' : undefined),
-      setCanonical(typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : undefined),
+      setCanonical(typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname.replace(/\/+$/, '')}/` : undefined),
     ]
 
     return () => {

@@ -29,6 +29,21 @@ export function jsonLdScript(data) {
   return `<script type="application/ld+json" data-prerendered="1">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`
 }
 
+/** Canonical address of a page: the same trailing-slash form the server redirects to. */
+export function pageUrl(site, path) {
+  if (!path || path === '/') return `${site}/`
+  return `${site}${path.startsWith('/') ? '' : '/'}${path.replace(/\/+$/, '')}/`
+}
+
+export const NAV_LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/shop', label: 'Shop' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/track-order', label: 'Track your order' },
+]
+
 export function absoluteUrl(site, pathOrUrl) {
   if (!pathOrUrl) return ''
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
@@ -40,13 +55,15 @@ export function absoluteUrl(site, pathOrUrl) {
  * page: { path, title, description, image?, type?, jsonLd?: object[], heading?, bodyHtml? }
  */
 export function renderPage(template, page, { site, siteName }) {
-  const url = `${site}${page.path === '/' ? '/' : page.path}`
+  const url = pageUrl(site, page.path)
   const title = escapeHtml(page.title)
   const description = escapeHtml(clip(page.description))
   const image = page.image ? escapeHtml(absoluteUrl(site, page.image)) : ''
 
   const tags = [
     `<link rel="canonical" href="${escapeHtml(url)}" />`,
+    `<meta name="robots" content="${page.noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'}" />`,
+    `<meta property="og:locale" content="en_PK" />`,
     `<meta property="og:site_name" content="${escapeHtml(siteName)}" />`,
     `<meta property="og:type" content="${escapeHtml(page.type || 'website')}" />`,
     `<meta property="og:title" content="${title}" />`,
@@ -70,8 +87,11 @@ export function renderPage(template, page, { site, siteName }) {
   html = html.replace('</head>', `    ${tags}\n  </head>`)
 
   if (page.heading || page.bodyHtml) {
-    const summary = `<noscript><main><h1>${escapeHtml(page.heading || page.title)}</h1>${page.bodyHtml || ''}</main></noscript>`
-    html = html.replace('<div id="root"></div>', `<div id="root"></div>\n    ${summary}`)
+    // Real content inside #root: crawlers (and visitors with scripts off) read it straight away,
+    // and React replaces it as soon as the app loads.
+    const nav = `<nav aria-label="Main">${linkListHtml(NAV_LINKS)}</nav>`
+    const summary = `<header><strong>${escapeHtml(siteName)}</strong>${nav}</header><main><h1>${escapeHtml(page.heading || page.title)}</h1>${page.bodyHtml || ''}</main>`
+    html = html.replace('<div id="root"></div>', `<div id="root">${summary}</div>`)
   }
   return html
 }

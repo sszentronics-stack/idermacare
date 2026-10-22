@@ -9,7 +9,8 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { linkListHtml, paragraphsHtml, renderPage } from './prerender-lib.mjs'
+import { BLOG_POSTS } from '../src/data/blogPosts.js'
+import { absoluteUrl, linkListHtml, pageUrl, paragraphsHtml, renderPage } from './prerender-lib.mjs'
 
 function readEnvFile() {
   const values = {}
@@ -42,14 +43,7 @@ async function rest(path) {
   }
 }
 
-const blogSource = readFileSync('src/data/blogPosts.js', 'utf8')
-const BLOG = [...blogSource.matchAll(/slug:\s*'([^']+)',\s*title:\s*'((?:[^'\\]|\\.)*)',\s*date:\s*'([^']+)',\s*tag:\s*'((?:[^'\\]|\\.)*)',\s*excerpt:\s*'((?:[^'\\]|\\.)*)'/g)].map((m) => ({
-  slug: m[1],
-  title: m[2].replace(/\\'/g, "'"),
-  date: m[3],
-  tag: m[4],
-  excerpt: m[5].replace(/\\'/g, "'"),
-}))
+const BLOG = BLOG_POSTS
 
 const siteRow = await rest('site_content?select=document&id=eq.storefront')
 const doc = siteRow?.[0]?.document ?? {}
@@ -112,7 +106,7 @@ pages.push({
 })
 
 for (const item of products) {
-  const productUrl = `${site}/products/${item.slug}`
+  const productUrl = pageUrl(site, `/products/${item.slug}`)
   pages.push({
     path: `/products/${item.slug}`,
     title: `${item.name} | ${siteName}`,
@@ -137,7 +131,7 @@ for (const item of products) {
       },
     ],
     heading: item.name,
-    bodyHtml: paragraphsHtml([item.tagline, item.description, `Price: Rs. ${item.price.toLocaleString('en-US')}.`]),
+    bodyHtml: paragraphsHtml([item.tagline, item.description, `Price: Rs. ${item.price.toLocaleString('en-US')}.`, item.inStock ? 'In stock. Cash on delivery across Pakistan.' : 'Currently out of stock.']) + linkListHtml([{ href: '/shop', label: 'Back to the shop' }]),
   })
 }
 
@@ -165,12 +159,14 @@ for (const post of BLOG) {
         description: post.excerpt,
         datePublished: post.date,
         author: { '@type': 'Organization', name: siteName },
-        publisher: { '@type': 'Organization', name: siteName },
-        mainEntityOfPage: `${site}/blog/${post.slug}`,
+        dateModified: post.date,
+        image: absoluteUrl(site, defaultImage),
+        publisher: { '@type': 'Organization', name: siteName, logo: { '@type': 'ImageObject', url: absoluteUrl(site, logo) } },
+        mainEntityOfPage: pageUrl(site, `/blog/${post.slug}`),
       },
     ],
     heading: post.title,
-    bodyHtml: paragraphsHtml([post.excerpt]),
+    bodyHtml: paragraphsHtml(post.body?.length ? post.body : [post.excerpt]) + linkListHtml([{ href: '/shop', label: 'Shop authentic skincare' }, { href: '/blog', label: 'More skincare articles' }]),
   })
 }
 
@@ -196,6 +192,17 @@ pages.push({
   title: `Track your order | ${siteName}`,
   description: `Check where your ${siteName} order is with your order number and email.`,
   image: defaultImage,
+  noindex: true,
+  heading: 'Track your order',
+  bodyHtml: paragraphsHtml(['Enter your order number and email to see where your order is.']),
+})
+pages.push({
+  path: '/gallery',
+  title: `Gallery | ${siteName}`,
+  description: `Photos of authentic skincare from ${siteName}.`,
+  image: defaultImage,
+  heading: 'Gallery',
+  bodyHtml: linkListHtml([{ href: '/shop', label: 'Shop all products' }]),
 })
 
 const policyDefaults = { shipping: 'Shipping policy', refund: 'Refund policy', privacy: 'Privacy policy', terms: 'Terms of service' }
@@ -216,6 +223,29 @@ if (!existsSync('dist/index.html')) {
   process.exit(0)
 }
 const template = readFileSync('dist/index.html', 'utf8')
+
+const crumb = (items) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: items.map(([name, path], index) => ({ '@type': 'ListItem', position: index + 1, name, item: pageUrl(site, path) })),
+})
+for (const page of pages) {
+  if (page.path.startsWith('/products/')) page.jsonLd = [...(page.jsonLd || []), crumb([['Home', '/'], ['Shop', '/shop'], [page.heading, page.path]])]
+  if (page.path.startsWith('/blog/')) page.jsonLd = [...(page.jsonLd || []), crumb([['Home', '/'], ['Blog', '/blog'], [page.heading, page.path]])]
+}
+
+// Apache serves this file with a real 404 status for addresses that do not exist (see public/.htaccess).
+writeFileSync(
+  join('dist', '404.html'),
+  renderPage(readFileSync('dist/index.html', 'utf8'), {
+    path: '/404',
+    title: `Page not found | ${siteName}`,
+    description: `This page does not exist. Browse ${siteName} skincare instead.`,
+    noindex: true,
+    heading: 'Page not found',
+    bodyHtml: paragraphsHtml(['We could not find that page.']) + linkListHtml([{ href: '/', label: 'Back to home' }, { href: '/shop', label: 'Shop all products' }]),
+  }, { site, siteName }),
+)
 
 for (const page of pages) {
   const html = renderPage(template, page, { site, siteName })

@@ -11,6 +11,7 @@ import { getPublicImageUrl } from '../lib/supabase/storage'
 import { toMajorUnits } from '../../backend/lib/money'
 import * as api from '../repositories/recentlyViewed.repository'
 import { useProducts } from './useCatalog'
+import { useAuth } from '../context/AuthContext'
 
 const STORAGE_KEY = 'aura-beauty-recently-viewed'
 const LIMIT = 12
@@ -30,7 +31,9 @@ function writeLocalIds(ids) {
 
 /** Record a product view — call once from the product detail page. */
 export function useRecordRecentlyViewed(productId) {
-  const configured = isSupabaseConfigured()
+  // The server list needs a signed-in (or guest) session; visitors without one use this device's list.
+  const { session } = useAuth()
+  const configured = isSupabaseConfigured() && Boolean(session)
   useEffect(() => {
     if (!productId) return
     if (configured) {
@@ -47,7 +50,8 @@ export function useRecordRecentlyViewed(productId) {
  * @param {string|undefined} excludeId
  */
 export function useRecentlyViewed(excludeId) {
-  const configured = isSupabaseConfigured()
+  const { session } = useAuth()
+  const configured = isSupabaseConfigured() && Boolean(session)
   const { products } = useProducts()
   const [serverItems, setServerItems] = useState([])
   const [loading, setLoading] = useState(configured)

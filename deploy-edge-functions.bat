@@ -2,7 +2,7 @@
 cd /d "%~dp0"
 
 echo.
-echo === Aura Beauty Care: deploy Edge Functions ===
+echo === iDermaCare: deploy Edge Functions ===
 echo.
 
 echo Step 1: Login (browser will open)...

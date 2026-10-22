@@ -1,31 +1,34 @@
-# Aura Beauty Care
+# iDermaCare
 
-React storefront for **Aura Beauty Care** — authentic SADOER, Hero Mighty Patch, and SOME BY MI skincare in Pakistan. Layout, **Jost** font, and colors follow [GlowCare Shop](https://glowcareshop.com/) (black header, forest-green footer, lavender buttons, gold shop-now CTA).
+React storefront for **iDermaCare** — authentic SADOER, Hero Mighty Patch and SOME BY MI skincare in Pakistan. Live at https://idermacare.com.
 
 ## Run locally
 
 ```bash
 npm install
+cp .env.example .env.local   # then fill in the Supabase URL and anon key
 npm run dev
 ```
 
-Then open the URL Vite prints (usually `http://localhost:5173`).
+Open the URL Vite prints (usually `http://localhost:5173`).
 
 ## What is included
 
-- Home with announcement bar, hero slider, new arrivals / best sellers, and shop-by-concern
-- Product pages with galleries from `C:\Users\azema\Desktop\Aurabeautycare`
-- Product disclaimer on both products
-- Cart + WhatsApp checkout (`+92 307 9594474`)
-- About, contact, privacy, shipping, refund, and terms pages
+- Storefront: home, shop, product pages, gallery, blog, order tracking, cart and checkout (cash on delivery, WhatsApp confirmation).
+- Admin at `/admin`: products, orders, customers, inventory, promotions, and a content editor for storefront text and photos.
+- Supabase backend: tables and row-level security in `supabase/migrations`, the `orders` Edge Function in `supabase/functions`.
+- SEO: every public page is pre-rendered at build time with its own title, description, canonical link, social tags and structured data; `sitemap.xml` and `robots.txt` are generated.
 
-## Edit products and prices
+## Scripts
 
-Update `src/data/products.js`. Replace the circular logo in `src/components/Logo.jsx` if you have brand files to drop in.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Build to `dist/` (also writes the sitemap and pre-rendered pages) |
+| `npm test` | Unit tests |
+| `npm run e2e` | Browser tests (Playwright) |
+| `npm run db:deploy-functions` | Deploy the Supabase Edge Functions |
 
-## Build
+## Deploy
 
-```bash
-npm run build
-npm run preview
-```
+Upload the contents of `dist/` to `public_html` on Hostinger. `public/.htaccess` is included in the build and handles redirects (www and http to https), app routes, and the 404 page.

@@ -12,10 +12,22 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # One address per page: send www. and plain http to https://idermacare.com.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # Only the app's own sections fall back to index.html. Pages that exist are served as files;
+  # anything else gets a real 404 (not a 200), so search engines do not index junk addresses.
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} ^/(products|account|admin|order-confirmation|login|register|forgot-password|reset-password|cart|checkout|gallery|blog)(/|$) [NC]
   RewriteRule ^ index.html [L]
 </IfModule>
+ErrorDocument 404 /404.html
 
 # --- Security headers ------------------------------------------------------
 <IfModule mod_headers.c>
