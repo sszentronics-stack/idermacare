@@ -34,6 +34,7 @@ export const DEFAULT_SITE_CONTENT = {
   slides: [
     {
       image: '/banners/sadoer-collagen-wide.jpg',
+      mobileImage: '/banners/sadoer-collagen-mobile.jpg',
       heading: 'Authentic skincare, without the guesswork',
       text: 'Genuine products, confirmed with you on WhatsApp before they ship.',
       actions: [
@@ -42,12 +43,14 @@ export const DEFAULT_SITE_CONTENT = {
     },
     {
       image: '/banners/some-by-mi-wide.jpg',
+      mobileImage: '/banners/some-by-mi-mobile.jpg',
       heading: 'SOME BY MI 30 Days Miracle Toner',
       text: 'AHA, BHA and PHA in one daily toner.',
       actions: [{ to: '/products/some-by-mi-aha-bha-pha-30-days-miracle-toner', label: 'Get this product' }],
     },
     {
       image: '/banners/mighty-patch-wide.jpg',
+      mobileImage: '/banners/mighty-patch-mobile.jpg',
       heading: 'Hero Mighty Patch Invisible+',
       text: 'A thin patch for daytime wear.',
       actions: [{ to: '/products/hero-mighty-patch-invisible-plus', label: 'Get this product' }],
