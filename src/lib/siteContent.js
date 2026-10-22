@@ -84,9 +84,9 @@ export const DEFAULT_SITE_CONTENT = {
     { label: 'Patches', to: '/products/hero-mighty-patch-invisible-plus', image: '/products/mighty-patch/2.jpg', storyImage: '/products/mighty-patch/2.jpg', mediaType: 'video', storyVideo: '/videos/mighty-patch-story.mp4' },
   ],
   brands: [
-    { label: 'SADOER', to: '/shop?brand=SADOER', image: '/brands/sadoer.svg' },
-    { label: 'Hero Cosmetics', to: '/shop?brand=Hero%20Cosmetics', image: '/brands/hero.svg' },
-    { label: 'SOME BY MI', to: '/shop?brand=SOME%20BY%20MI', image: '/brands/some-by-mi.svg' },
+    { label: 'SADOER', to: '/shop?brand=SADOER', image: '/stories/sadoer-circle.jpg' },
+    { label: 'Hero Cosmetics', to: '/shop?brand=Hero%20Cosmetics', image: '/stories/hero-circle.jpg' },
+    { label: 'SOME BY MI', to: '/shop?brand=SOME%20BY%20MI', image: '/stories/some-by-mi-circle.jpg' },
   ],
   watch: {
     heading: 'Watch and shop',
