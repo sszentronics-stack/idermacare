@@ -76,12 +76,12 @@ export const DEFAULT_SITE_CONTENT = {
     brandHeading: 'Shop by brand',
   },
   stories: [
-    { label: 'SADOER', to: '/products/sadoer-collagen-anti-aging-facial-mask', image: '/products/sadoer-collagen/1.png', storyImage: '/products/sadoer-collagen/1.png' },
-    { label: 'Hero', to: '/products/hero-mighty-patch-invisible-plus', image: '/products/mighty-patch/1.jpg', storyImage: '/products/mighty-patch/1.jpg' },
-    { label: 'SOME BY MI', to: '/products/some-by-mi-aha-bha-pha-30-days-miracle-toner', image: '/products/some-by-mi/1.jpg', storyImage: '/products/some-by-mi/1.jpg' },
+    { label: 'SADOER', to: '/products/sadoer-collagen-anti-aging-facial-mask', image: '/stories/sadoer-circle.jpg', storyImage: '/products/sadoer-collagen/1.png' },
+    { label: 'Hero', to: '/products/hero-mighty-patch-invisible-plus', image: '/stories/hero-circle.jpg', storyImage: '/products/mighty-patch/1.jpg', mediaType: 'video', storyVideo: '/videos/mighty-patch-story.mp4' },
+    { label: 'SOME BY MI', to: '/products/some-by-mi-aha-bha-pha-30-days-miracle-toner', image: '/stories/some-by-mi-circle.jpg', storyImage: '/products/some-by-mi/1.jpg' },
     { label: 'Masks', to: '/products/sadoer-collagen-anti-aging-facial-mask', image: '/products/sadoer-collagen/2.png', storyImage: '/products/sadoer-collagen/2.png' },
     { label: 'Toners', to: '/products/some-by-mi-aha-bha-pha-30-days-miracle-toner', image: '/products/some-by-mi/2.jpg', storyImage: '/products/some-by-mi/2.jpg' },
-    { label: 'Patches', to: '/products/hero-mighty-patch-invisible-plus', image: '/products/mighty-patch/2.jpg', storyImage: '/products/mighty-patch/2.jpg' },
+    { label: 'Patches', to: '/products/hero-mighty-patch-invisible-plus', image: '/products/mighty-patch/2.jpg', storyImage: '/products/mighty-patch/2.jpg', mediaType: 'video', storyVideo: '/videos/mighty-patch-story.mp4' },
   ],
   brands: [
     { label: 'SADOER', to: '/shop?brand=SADOER', image: '/brands/sadoer.svg' },
