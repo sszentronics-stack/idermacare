@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { isSupabaseConfigured } from '../../../lib/supabase/client'
 import { SITE_CONTENT_LIMITS, loadSiteContent, saveSiteContent, uploadSiteAsset } from '../../../lib/siteContent'
 
 const SECTIONS = [

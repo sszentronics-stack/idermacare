@@ -15,8 +15,8 @@
  * must change with it (documented at both ends).
  */
 
-/** 1 point earned per Rs. 1 (100 minor units) of grand_total, floored. */
-export const EARN_RATE_MINOR_UNITS_PER_POINT = 100
+/** 1 point earned per Rs. 100 (10000 minor units) of grand_total, floored. */
+export const EARN_RATE_MINOR_UNITS_PER_POINT = 10000
 
 /** 1 point redeemed is worth Rs. 1 (100 minor units) of discount. */
 export const REDEMPTION_MINOR_UNITS_PER_POINT = 100
@@ -25,7 +25,7 @@ export interface LoyaltyLedgerEntryLike {
   points: number
 }
 
-/** Compute the points an order will earn once delivered, from its grand total (minor units). Mirrors the DB trigger's `floor(grand_total / 100.0)`. */
+/** Compute the points an order will earn once delivered, from its grand total (minor units). Mirrors the DB trigger's `floor(grand_total / 10000.0)`. */
 export function computeEarnedPoints(grandTotalMinorUnits: number): number {
   if (!Number.isFinite(grandTotalMinorUnits) || grandTotalMinorUnits < 0) return 0
   return Math.floor(grandTotalMinorUnits / EARN_RATE_MINOR_UNITS_PER_POINT)

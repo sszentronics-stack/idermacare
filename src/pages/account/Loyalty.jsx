@@ -34,7 +34,7 @@ export default function Loyalty() {
         <p className="text-xs uppercase tracking-wide text-ink-soft mb-1">Your balance</p>
         <p className="text-4xl font-display font-medium">{summary.balance.toLocaleString()} pts</p>
         <p className="text-sm text-ink-soft mt-2">
-          Worth Rs. {(summary.balance).toLocaleString()} off a future order. You earn 1 point for every Rs. 1 spent once an order is
+          Worth Rs. {(summary.balance).toLocaleString()} off a future order. You earn 1 point for every Rs. 100 spent once an order is
           delivered, and can redeem points at checkout.
         </p>
       </div>

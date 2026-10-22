@@ -9,10 +9,15 @@ import {
 } from './index.ts'
 
 describe('computeEarnedPoints', () => {
-  it('earns 1 point per Rs. 1 (100 minor units), floored', () => {
-    expect(computeEarnedPoints(12900)).toBe(129)
-    expect(computeEarnedPoints(12999)).toBe(129)
-    expect(computeEarnedPoints(99)).toBe(0)
+  it('earns 1 point per Rs. 100 (10000 minor units), floored', () => {
+    expect(computeEarnedPoints(460000)).toBe(46)
+    expect(computeEarnedPoints(469999)).toBe(46)
+    expect(computeEarnedPoints(9999)).toBe(0)
+  })
+
+  it('returns far less than the money spent (about 1%)', () => {
+    const spent = 1000000
+    expect(computeRedemptionValue(computeEarnedPoints(spent))).toBe(spent / 100)
   })
 
   it('never returns negative points for bad input', () => {
